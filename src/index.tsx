@@ -10,20 +10,34 @@ type Props = {
     autoDisconnect?: boolean,
 }
 
-export const Provider: FunctionComponent<Props> = React.memo(function ClientProvider({
+export const Provider: FunctionComponent<Props> = ({
     children,
     autoConnect = true,
     autoDisconnect = false,
     ...props
-}) {
-    const [client, setClient] = useState(null)
-
+}) => {
+    const [params, setParams] = useState({
+        autoConnect,
+        autoDisconnect,
+        ...props
+    })
+    
     useEffect(() => {
-        const client = new StreamrClient({
+        const nextParams = {
             autoConnect,
             autoDisconnect,
             ...props
-        })
+        }
+
+        setParams((current) => eq(current, nextParams) ? current : nextParams)
+    }, [autoConnect, autoDisconnect, props])
+
+    const [client, setClient] = useState(null)
+
+    useEffect(() => {
+        console.log('SET CLIENT', params)
+
+        const client = new StreamrClient(params)
 
         setClient(client)
 
@@ -36,16 +50,14 @@ export const Provider: FunctionComponent<Props> = React.memo(function ClientProv
 
             disconnect()
         }
-    })
+    }, [params])
 
     return (
         <ClientContext.Provider value={client}>
             {children}
         </ClientContext.Provider>
     )
-}, ({ children: _dontKnow, ...prevProps }, { children: _dontCare, ...nextProps }) => (
-    eq(prevProps, nextProps)
-))
+}
 
 const useClient = () => (
     useContext(ClientContext)
