@@ -59,7 +59,7 @@ export const Provider: FunctionComponent<Props> = ({
     )
 }
 
-const useClient = () => (
+export const useClient = () => (
     useContext(ClientContext)
 )
 
