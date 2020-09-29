@@ -10,7 +10,7 @@ type Props = {
     autoDisconnect?: boolean,
 }
 
-export const Provider: FunctionComponent<Props> = ({
+const Provider: FunctionComponent<Props> = ({
     children,
     autoConnect = true,
     autoDisconnect = false,
@@ -111,3 +111,5 @@ export const useSubscription = (subscriptionParams: object, onMessage: (message:
         }
     }, [client, params])
 }
+
+export default Provider
