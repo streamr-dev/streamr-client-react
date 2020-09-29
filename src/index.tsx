@@ -35,8 +35,6 @@ export const Provider: FunctionComponent<Props> = ({
     const [client, setClient] = useState(null)
 
     useEffect(() => {
-        console.log('SET CLIENT', params)
-
         const client = new StreamrClient(params)
 
         setClient(client)
