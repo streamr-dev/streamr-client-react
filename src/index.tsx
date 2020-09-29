@@ -61,6 +61,10 @@ export const useClient = () => (
     useContext(ClientContext)
 )
 
+const defaultErrorHandler = (error: any) => {
+    console.log(error)
+}
+
 export const useSubscription = (subscriptionParams: object, onMessage: (message: any) => void, onError?: (error: any) => void) => {
     const client = useClient()
 
@@ -70,10 +74,10 @@ export const useSubscription = (subscriptionParams: object, onMessage: (message:
         onMessageRef.current = onMessage
     }, [onMessage])
 
-    const onErrorRef = useRef(onError)
+    const onErrorRef = useRef(onError || defaultErrorHandler)
 
     useEffect(() => {
-        onErrorRef.current = onError
+        onErrorRef.current = onError || defaultErrorHandler
     }, [onError])
 
     const [params, setParams] = useState(subscriptionParams)
@@ -98,7 +102,7 @@ export const useSubscription = (subscriptionParams: object, onMessage: (message:
                     onMessageRef.current(message)
                 })
             } catch (e) {
-                (onErrorRef.current || (() => console.log(e)))(e)
+                onErrorRef.current(e)
             }
 
             return null
