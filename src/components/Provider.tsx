@@ -23,7 +23,7 @@ const Provider: FunctionComponent<Props> = ({
         autoDisconnect,
         ...props
     })
-    
+
     useEffect(() => {
         const nextParams = {
             autoConnect,
