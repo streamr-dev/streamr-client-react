@@ -1,6 +1,7 @@
-import React, { createContext, useContext, FunctionComponent, useMemo, useEffect, useState, useRef } from 'react'
+import React, { createContext, useContext, FunctionComponent, useMemo, useEffect, useState, useRef, useReducer } from 'react'
 import StreamrClient from 'streamr-client'
 import eq from 'deep-equal'
+import useIsMounted from './hooks/useIsMounted'
 
 const ClientContext: React.Context<typeof StreamrClient> = createContext(null)
 
@@ -16,6 +17,8 @@ const Provider: FunctionComponent<Props> = ({
     autoDisconnect = false,
     ...props
 }) => {
+    const isMounted = useIsMounted()
+
     const [params, setParams] = useState({
         autoConnect,
         autoDisconnect,
@@ -32,23 +35,47 @@ const Provider: FunctionComponent<Props> = ({
         setParams((current) => eq(current, nextParams) ? current : nextParams)
     }, [autoConnect, autoDisconnect, props])
 
-    const [client, setClient] = useState(null)
+    const [client, setClient] = useState<typeof StreamrClient>(null)
+
+    const [clientNo, requestNewClient] = useReducer((x) => x + 1, 0)
 
     useEffect(() => {
         const client = new StreamrClient(params)
 
+        let resetting = false
+
+        const reset = (...args: any) => {
+            if (resetting) {
+                return
+            }
+            resetting = true
+
+            client.connection.off('disconnecting', reset)
+            client.connection.off('disconnected', reset)
+            client.off('error', reset)
+
+            client.ensureDisconnected()
+
+            if (isMounted()) {
+                requestNewClient()
+            }
+        }
+
+        client.connection.once('disconnecting', reset)
+        client.connection.once('disconnected', reset)
+        client.once('error', reset)
+
         setClient(client)
 
         return () => {
-            const disconnect = async () => {
-                try {
-                    await client.disconnect()
-                } catch (_) { /* */ }
+            if (!resetting) {
+                reset()
             }
-
-            disconnect()
         }
-    }, [params])
+
+        // New clients are triggered by either changes in `params` or when explicitly requested
+        // from the `reset` function, see `clientNo` and `requestNewClient` above.
+    }, [clientNo, params, isMounted])
 
     return (
         <ClientContext.Provider value={client}>
