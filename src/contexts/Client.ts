@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 import StreamrClient from 'streamr-client'
 
-const ClientContext: React.Context<typeof StreamrClient> = createContext(null)
+const ClientContext = createContext<typeof StreamrClient>(undefined)
 
 export default ClientContext
