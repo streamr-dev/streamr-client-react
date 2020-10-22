@@ -6,7 +6,7 @@ const defaultErrorHandler = (error: any) => {
     console.log(error)
 }
 
-const useSubscription = (subscriptionParams: object, onMessage: (message: any) => void, onError?: (error: any) => void) => {
+const useSubscription = (subscriptionParams: object, onMessage: (message: object, metadata: object) => void, onError?: (error: any) => void) => {
     const client = useClient()
 
     const onMessageRef = useRef(onMessage)
@@ -39,8 +39,8 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: any) =
 
         const sub = (() => {
             try {
-                return client.subscribe(params, (message: object) => {
-                    onMessageRef.current(message)
+                return client.subscribe(params, (message: object, metadata: object) => {
+                    onMessageRef.current(message, metadata)
                 })
             } catch (e) {
                 onErrorRef.current(e)
