@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react'
 import eq from 'deep-equal'
 import StreamrClient from 'streamr-client'
-import ClientContext from '../contexts/Client'
+import ClientContext from './ClientContext'
 
 type Props = {
     children: string,

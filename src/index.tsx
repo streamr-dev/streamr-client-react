@@ -1,5 +1,5 @@
-export { default as ClientContext } from './contexts/Client'
-export { default as useClient } from './hooks/useClient'
-export { default as useSubscription } from './hooks/useSubscription'
+export { default as ClientContext } from './ClientContext'
+export { default as useClient } from './useClient'
+export { default as useSubscription } from './useSubscription'
 
-export { default } from './components/Provider'
+export { default } from './Provider'

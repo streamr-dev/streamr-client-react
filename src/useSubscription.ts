@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react'
 import eq from 'deep-equal'
-import useClient from '../hooks/useClient'
-import useIsMounted from '../hooks/useIsMounted'
+import useClient from './useClient'
+import useIsMounted from './useIsMounted'
 
 const defaultErrorHandler = (error: any) => {
     console.log(error)
