@@ -1,9 +1,46 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from '../hooks/useClient'
+import useIsMounted from '../hooks/useIsMounted'
 
 const defaultErrorHandler = (error: any) => {
     console.log(error)
+}
+
+type State = {
+    params: object,
+    resubscribeCount: number,
+}
+
+const initialState = {
+    params: {},
+    resubscribeCount: 0,
+}
+
+type Action = {
+    type: string,
+    payload?: any,
+}
+
+const REQUEST_RESUBSCRIBE = 'request resubscribe'
+
+const SET_PARAMS = 'set params'
+
+const reducer = (state: State, action: Action): State => {
+    switch (action.type) {
+        case SET_PARAMS:
+            return {
+                ...state,
+                params: action.payload,
+            }
+        case REQUEST_RESUBSCRIBE:
+            return {
+                ...state,
+                resubscribeCount: state.resubscribeCount + 1,
+            }
+        default:
+            return state
+    }
 }
 
 const useSubscription = (subscriptionParams: object, onMessage: (message: object, metadata: object) => void, onError?: (error: any) => void) => {
@@ -21,14 +58,42 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         onErrorRef.current = onError || defaultErrorHandler
     }, [onError])
 
-    const [params, setParams] = useState(subscriptionParams)
+    const [{ params, resubscribeCount }, dispatch] = useReducer(reducer, {
+        ...initialState,
+        params: subscriptionParams,
+    })
 
     useEffect(() => {
         if (!eq(params, subscriptionParams)) {
             // Change current params only if – according to `eq` – they changed.
-            setParams(subscriptionParams)
+            dispatch({
+                type: SET_PARAMS,
+                payload: subscriptionParams,
+            })
         }
     }, [subscriptionParams])
+
+    const isMounted = useIsMounted()
+
+    useEffect(() => {
+        if (!client) {
+            return () => {}
+        }
+
+        const onDisconnected = () => {
+            if (isMounted()) {
+                dispatch({
+                    type: REQUEST_RESUBSCRIBE,
+                })
+            }
+        }
+
+        client.on('disconnected', onDisconnected)
+
+        return () => {
+            client.off('disconnected', onDisconnected)
+        }
+    }, [client])
 
     useEffect(() => {
         if (!client) {
@@ -54,7 +119,7 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
                 client.unsubscribe(sub)
             }
         }
-    }, [client, params])
+    }, [client, params, resubscribeCount])
 }
 
 export default useSubscription
