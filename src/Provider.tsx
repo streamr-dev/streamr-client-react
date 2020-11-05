@@ -35,6 +35,10 @@ const Provider: FunctionComponent<Props> = ({
         new StreamrClient(params)
     ), [params])
 
+    useEffect(() => () => {
+        client.ensureDisconnected()
+    }, [client])
+
     return (
         <ClientContext.Provider value={client}>
             {children}
