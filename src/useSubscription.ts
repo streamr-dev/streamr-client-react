@@ -1,3 +1,4 @@
+import type { EventEmitter } from 'events'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from './useClient'
@@ -43,8 +44,25 @@ const reducer = (state: State, action: Action): State => {
     }
 }
 
-const useSubscription = (subscriptionParams: object, onMessage: (message: object, metadata: object) => void, onError?: (error: any) => void) => {
+type Options = {
+    isActive?: boolean
+    onMessage?: (message: object, metadata: object) => void
+    onUnsubscribed?: () => void
+    onSubscribed?: () => void
+    onError?: (error: any) => void
+}
+
+const noop = () => {}
+
+const useSubscription = (subscriptionParams: object, options: Options = {}) => {
     const client = useClient()
+    const {
+        isActive = true,
+        onMessage = noop,
+        onSubscribed = noop,
+        onUnsubscribed = noop,
+        onError = defaultErrorHandler,
+    } = options
 
     const onMessageRef = useRef(onMessage)
 
@@ -52,10 +70,10 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         onMessageRef.current = onMessage
     }, [onMessage])
 
-    const onErrorRef = useRef(onError || defaultErrorHandler)
+    const onErrorRef = useRef(onError)
 
     useEffect(() => {
-        onErrorRef.current = onError || defaultErrorHandler
+        onErrorRef.current = onError
     }, [onError])
 
     const [{ params, resubscribeCount }, dispatch] = useReducer(reducer, {
@@ -81,7 +99,7 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         }
 
         const onDisconnected = () => {
-            if (isMounted()) {
+            if (isMounted() && isActive) {
                 dispatch({
                     type: REQUEST_RESUBSCRIBE,
                 })
@@ -93,16 +111,16 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         return () => {
             client.off('disconnected', onDisconnected)
         }
-    }, [client])
+    }, [client, isActive])
+
+    const [sub, setSub] = useState<EventEmitter | undefined>()
 
     useEffect(() => {
-        if (!client) {
-            return () => {
-                // No client -> no unsubbing.
-            }
+        if (!isActive || !client) {
+            return // No client -> no unsubbing.
         }
 
-        const sub = (() => {
+        const s = (() => {
             try {
                 return client.subscribe(params, (message: object, metadata: object) => {
                     onMessageRef.current(message, metadata)
@@ -114,12 +132,29 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
             return null
         })()
 
+        if (s) {
+            setSub(s)
+        }
+
         return () => {
-            if (sub) {
-                client.unsubscribe(sub)
+            if (s) {
+                setSub(undefined)
+                client.unsubscribe(s)
             }
         }
-    }, [client, params, resubscribeCount])
+    }, [client, params, isActive, resubscribeCount])
+
+    useEffect(() => {
+        if (!sub || !isActive) { return }
+
+        sub!.on('subscribed', onSubscribed)
+        sub!.on('unsubscribed', onUnsubscribed)
+
+        return () => {
+            sub!.off('subscribed', onSubscribed)
+            sub!.off('unsubscribed', onUnsubscribed)
+        }
+    }, [sub, isActive, onSubscribed, onUnsubscribed])
 }
 
 export default useSubscription
