@@ -46,9 +46,11 @@ const reducer = (state: State, action: Action): State => {
 
 type Options = {
     isActive?: boolean
+    isRealtime?: boolean
     onMessage?: (message: object, metadata: object) => void
     onUnsubscribed?: () => void
     onSubscribed?: () => void
+    onResent?: () => void
     onError?: (error: any) => void
 }
 
@@ -58,8 +60,10 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
     const client = useClient()
     const {
         isActive = true,
+        isRealtime = true,
         onMessage = noop,
         onSubscribed = noop,
+        onResent = noop,
         onUnsubscribed = noop,
         onError = defaultErrorHandler,
     } = options
@@ -120,11 +124,17 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
             return // No client -> no unsubbing.
         }
 
-        const s = (() => {
+        let cancelled = false
+
+        ;(async () => {
             try {
-                return client.subscribe(params, (message: object, metadata: object) => {
+                const s = await client[isRealtime ? 'subscribe' : 'resend'](params, (message: object, metadata: object) => {
                     onMessageRef.current(message, metadata)
                 })
+
+                if (!cancelled) {
+                    setSub(s)
+                }
             } catch (e) {
                 onErrorRef.current(e)
             }
@@ -132,29 +142,36 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
             return null
         })()
 
-        if (s) {
-            setSub(s)
-        }
-
         return () => {
-            if (s) {
-                setSub(undefined)
-                client.unsubscribe(s)
-            }
+            cancelled = true
+            setSub(undefined)
         }
-    }, [client, params, isActive, resubscribeCount])
+    }, [client, params, isActive, isRealtime, resubscribeCount])
+
+    useEffect(() => {
+        if (!sub || !isActive) { return }
+        onSubscribed()
+    }, [sub, isActive, onSubscribed])
+
+    useEffect(() => () => {
+        if (sub) {
+            client.unsubscribe(sub!)
+        }
+    }, [sub])
 
     useEffect(() => {
         if (!sub || !isActive) { return }
 
-        sub!.on('subscribed', onSubscribed)
+        sub!.on('resent', onResent)
         sub!.on('unsubscribed', onUnsubscribed)
+        sub!.on('error', onError)
 
         return () => {
-            sub!.off('subscribed', onSubscribed)
+            sub!.off('resent', onResent)
             sub!.off('unsubscribed', onUnsubscribed)
+            sub!.off('error', onError)
         }
-    }, [sub, isActive, onSubscribed, onUnsubscribed])
+    }, [sub, isActive, onSubscribed, onUnsubscribed, onError])
 }
 
 export default useSubscription
