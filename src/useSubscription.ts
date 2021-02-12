@@ -162,14 +162,14 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
     useEffect(() => {
         if (!sub || !isActive) { return }
 
-        sub!.on('resent', onResent)
-        sub!.on('unsubscribed', onUnsubscribed)
-        sub!.on('error', onError)
+        sub.on('resent', onResent)
+        sub.on('unsubscribed', onUnsubscribed)
+        sub.on('error', onError)
 
         return () => {
-            sub!.off('resent', onResent)
-            sub!.off('unsubscribed', onUnsubscribed)
-            sub!.off('error', onError)
+            sub.off('resent', onResent)
+            sub.off('unsubscribed', onUnsubscribed)
+            sub.off('error', onError)
         }
     }, [sub, isActive, onSubscribed, onUnsubscribed, onError])
 }
