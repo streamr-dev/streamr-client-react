@@ -155,7 +155,7 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
 
     useEffect(() => () => {
         if (sub) {
-            client.unsubscribe(sub!)
+            client.unsubscribe(sub)
         }
     }, [sub])
 
