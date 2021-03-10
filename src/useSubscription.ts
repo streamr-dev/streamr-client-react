@@ -1,3 +1,4 @@
+import type { EventEmitter } from 'events'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from './useClient'
@@ -43,8 +44,29 @@ const reducer = (state: State, action: Action): State => {
     }
 }
 
-const useSubscription = (subscriptionParams: object, onMessage: (message: object, metadata: object) => void, onError?: (error: any) => void) => {
+type Options = {
+    isActive?: boolean
+    isRealtime?: boolean
+    onMessage?: (message: object, metadata: object) => void
+    onUnsubscribed?: () => void
+    onSubscribed?: () => void
+    onResent?: () => void
+    onError?: (error: any) => void
+}
+
+const noop = () => {}
+
+const useSubscription = (subscriptionParams: object, options: Options = {}) => {
     const client = useClient()
+    const {
+        isActive = true,
+        isRealtime = true,
+        onMessage = noop,
+        onSubscribed = noop,
+        onResent = noop,
+        onUnsubscribed = noop,
+        onError = defaultErrorHandler,
+    } = options
 
     const onMessageRef = useRef(onMessage)
 
@@ -52,10 +74,10 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         onMessageRef.current = onMessage
     }, [onMessage])
 
-    const onErrorRef = useRef(onError || defaultErrorHandler)
+    const onErrorRef = useRef(onError)
 
     useEffect(() => {
-        onErrorRef.current = onError || defaultErrorHandler
+        onErrorRef.current = onError
     }, [onError])
 
     const [{ params, resubscribeCount }, dispatch] = useReducer(reducer, {
@@ -81,7 +103,7 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         }
 
         const onDisconnected = () => {
-            if (isMounted()) {
+            if (isMounted() && isActive) {
                 dispatch({
                     type: REQUEST_RESUBSCRIBE,
                 })
@@ -93,20 +115,26 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         return () => {
             client.off('disconnected', onDisconnected)
         }
-    }, [client])
+    }, [client, isActive])
+
+    const [sub, setSub] = useState<EventEmitter | undefined>()
 
     useEffect(() => {
-        if (!client) {
-            return () => {
-                // No client -> no unsubbing.
-            }
+        if (!isActive || !client) {
+            return // No client -> no unsubbing.
         }
 
-        const sub = (() => {
+        let cancelled = false
+
+        ;(async () => {
             try {
-                return client.subscribe(params, (message: object, metadata: object) => {
+                const s = await client[isRealtime ? 'subscribe' : 'resend'](params, (message: object, metadata: object) => {
                     onMessageRef.current(message, metadata)
                 })
+
+                if (!cancelled) {
+                    setSub(s)
+                }
             } catch (e) {
                 onErrorRef.current(e)
             }
@@ -115,11 +143,35 @@ const useSubscription = (subscriptionParams: object, onMessage: (message: object
         })()
 
         return () => {
-            if (sub) {
-                client.unsubscribe(sub)
-            }
+            cancelled = true
+            setSub(undefined)
         }
-    }, [client, params, resubscribeCount])
+    }, [client, params, isActive, isRealtime, resubscribeCount])
+
+    useEffect(() => {
+        if (!sub || !isActive) { return }
+        onSubscribed()
+    }, [sub, isActive, onSubscribed])
+
+    useEffect(() => () => {
+        if (sub) {
+            client.unsubscribe(sub)
+        }
+    }, [sub])
+
+    useEffect(() => {
+        if (!sub || !isActive) { return }
+
+        sub.on('resent', onResent)
+        sub.on('unsubscribed', onUnsubscribed)
+        sub.on('error', onError)
+
+        return () => {
+            sub.off('resent', onResent)
+            sub.off('unsubscribed', onUnsubscribed)
+            sub.off('error', onError)
+        }
+    }, [sub, isActive, onSubscribed, onUnsubscribed, onError])
 }
 
 export default useSubscription

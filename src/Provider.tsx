@@ -9,17 +9,17 @@ type Props = {
     autoDisconnect?: boolean,
 }
 
-const Provider: FunctionComponent<Props> = ({
+const ClientProvider: FunctionComponent<Props> = ({
     children,
     autoConnect = true,
     autoDisconnect = false,
     ...props
 }) => {
-    const [params, setParams] = useState({
+    const [params, setParams] = useState(() => ({
         autoConnect,
         autoDisconnect,
         ...props
-    })
+    }))
 
     useEffect(() => {
         const nextParams = {
@@ -46,4 +46,4 @@ const Provider: FunctionComponent<Props> = ({
     )
 }
 
-export default Provider
+export default ClientProvider
