@@ -36,7 +36,7 @@ const ClientProvider: FunctionComponent<Props> = ({
     ), [params])
 
     useEffect(() => () => {
-        client.ensureDisconnected()
+        client.disconnect()
     }, [client])
 
     return (
