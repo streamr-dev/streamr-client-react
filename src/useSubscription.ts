@@ -69,16 +69,10 @@ const useSubscription = (subscriptionParams: object, options: Options = {}) => {
     } = options
 
     const onMessageRef = useRef(onMessage)
-
-    useEffect(() => {
-        onMessageRef.current = onMessage
-    }, [onMessage])
+    onMessageRef.current = onMessage
 
     const onErrorRef = useRef(onError)
-
-    useEffect(() => {
-        onErrorRef.current = onError
-    }, [onError])
+    onErrorRef.current = onError
 
     const [{ params, resubscribeCount }, dispatch] = useReducer(reducer, {
         ...initialState,
