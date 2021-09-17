@@ -32,11 +32,13 @@ const ClientProvider: FunctionComponent<Props> = ({
     }, [autoConnect, autoDisconnect, props])
 
     const client = useMemo<typeof StreamrClient>(() => (
-        new StreamrClient(params)
+        typeof window === 'undefined' ? null : new StreamrClient(params)
     ), [params])
 
     useEffect(() => () => {
-        client.disconnect()
+        if (client) {
+            client.disconnect()
+        }
     }, [client])
 
     return (
