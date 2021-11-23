@@ -1,8 +1,7 @@
 import { useContext } from 'react'
 import ClientContext from './ClientContext'
+import type { StreamrClient } from 'streamr-client'
 
-const useClient = () => (
-    useContext(ClientContext)
-)
-
-export default useClient
+export default function useClient(): StreamrClient | undefined {
+    return useContext(ClientContext)
+}

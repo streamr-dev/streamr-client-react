@@ -1,48 +1,47 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react'
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import StreamrClient from 'streamr-client'
 import ClientContext from './ClientContext'
+import type { StreamrClientConfig } from 'streamr-client'
 
-type Props = {
-    children: string,
-    autoConnect?: boolean,
-    autoDisconnect?: boolean,
+export type Props = {
+    children: React.ReactNode,
+} & StreamrClientConfig
+
+const isSSR = typeof window !== 'undefined'
+function createClient(options: StreamrClientConfig) {
+    return isSSR ? null : new StreamrClient(options)
 }
 
 const ClientProvider: FunctionComponent<Props> = ({
     children,
-    autoConnect = true,
-    autoDisconnect = false,
     ...props
 }) => {
-    const [params, setParams] = useState(() => ({
-        autoConnect,
-        autoDisconnect,
-        ...props
-    }))
+    const lastProps = useRef(props)
+    useEffect(() => {
+        lastProps.current = props
+    }, [props])
+    console.log('RENDER')
+
+    const propsChanged = !eq(lastProps.current, props)
+    const [client, setClient] = useState(() => createClient(props))
 
     useEffect(() => {
-        const nextParams = {
-            autoConnect,
-            autoDisconnect,
-            ...props
+        // update client on changed props
+        if (propsChanged) {
+            setClient(createClient(props))
         }
-
-        setParams((current) => eq(current, nextParams) ? current : nextParams)
-    }, [autoConnect, autoDisconnect, props])
-
-    const client = useMemo<typeof StreamrClient>(() => (
-        typeof window === 'undefined' ? null : new StreamrClient(params)
-    ), [params])
+    }, [props, propsChanged])
 
     useEffect(() => () => {
-        if (client) {
-            client.disconnect()
-        }
+        // destroy old client
+        client?.destroy()
     }, [client])
 
+    if (!isSSR && !client) { return null }
+
     return (
-        <ClientContext.Provider value={client}>
+        <ClientContext.Provider value={client!}>
             {children}
         </ClientContext.Provider>
     )
