@@ -4,7 +4,7 @@
   "description": "React toolkit for Streamr.",
   "main": "dist/bundle.js",
   "scripts": {
-    "build": "NODE_ENV=production webpack --mode=production --progress",
+    "build": "NODE_ENV=development webpack --mode=development --progress",
     "prepack": "npm run build",
     "start": "webpack --progress --colors --watch --mode=development",
     "test": "NODE_ENV=test jest"
@@ -40,7 +40,7 @@
     "jest": "^27.3.1",
     "react": "^17.0.2",
     "react-test-renderer": "^17.0.2",
-    "streamr-client": "^6.1.0-ocr-experimental.7",
+    "streamr-client": "^6.1.0-ocr-experimental.8",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.2",

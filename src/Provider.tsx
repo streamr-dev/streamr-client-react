@@ -8,7 +8,7 @@ export type Props = {
     children: React.ReactNode,
 } & StreamrClientConfig
 
-const isSSR = typeof window !== 'undefined'
+const isSSR = typeof window === 'undefined'
 function createClient(options: StreamrClientConfig) {
     return isSSR ? null : new StreamrClient(options)
 }
