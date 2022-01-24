@@ -3,9 +3,7 @@ import eq from 'deep-equal'
 import useClient from './useClient'
 import useIsMounted from './useIsMounted'
 import StreamrClient from 'streamr-client'
-import type { ResendSubscription } from 'streamr-client/types/src/ResendSubscribe'
-import type { Subscription } from 'streamr-client'
-import type { StreamMessage } from 'streamr-client-protocol'
+import type { ResendSubscription, Subscription } from 'streamr-client'
 
 const defaultErrorHandler = (error: any) => {
     console.error(error)
@@ -14,7 +12,8 @@ const defaultErrorHandler = (error: any) => {
 type Options<T> = {
     isActive?: boolean
     isRealtime?: boolean
-    onMessage?: (message: T, metadata: StreamMessage<T>) => void
+    // FIXME: Better type annotation for `streamMessage`.
+    onMessage?: (msg: T, streamMessage: any) => void
     onUnsubscribed?: () => void
     onSubscribed?: () => void
     onResent?: () => void
@@ -29,7 +28,6 @@ type SubscriptionOptions = (
 )
 
 function useSubscription<T extends object = object>(subscriptionParams: SubscriptionOptions, options: Options<T> = {}): void {
-    const client = useClient()
     const {
         isActive = true,
         onMessage = noop,
@@ -38,84 +36,123 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
         onUnsubscribed = noop,
         onError = defaultErrorHandler,
     } = options
+
+    const client = useClient()
+
     const onMessageRef = useRef(onMessage)
-    onMessageRef.current = onMessage
+
+    useEffect(() => {
+        onMessageRef.current = onMessage
+    }, [onMessage])
 
     const onErrorRef = useRef(onError)
-    onErrorRef.current = onError
 
-    const [params, setParams] = useState(subscriptionParams)
-    const subscriptionParamsChanged = !eq(params, subscriptionParams)
     useEffect(() => {
-        if (subscriptionParamsChanged) {
-            setParams(subscriptionParams)
-        }
-    }, [subscriptionParams, subscriptionParamsChanged])
+        onErrorRef.current = onError
+    }, [onError])
+
+    const onSubscribedRef = useRef(onSubscribed)
+
+    useEffect(() => {
+        onSubscribedRef.current = onSubscribed
+    }, [onSubscribed])
 
     const isMounted = useIsMounted()
 
-    const [sub, setSub] = useState<ResendSubscription<T> | Subscription<T>>()
-    const shouldSubscribe = !!(isActive && !client?.isDestroyed())
+    const subscriptionParamsRef = useRef(subscriptionParams)
+
+    const [subscription, setSubscription] = useState<ResendSubscription<T> | Subscription<T>>()
 
     useEffect(() => {
-        if (!shouldSubscribe || !client) {
-            return // No client -> no unsubbing.
-        }
-
         let cancelled = false
 
-        ;(async () => {
-            if (!subscriptionParamsChanged) {
-                return
-            }
+        if (!client || client.isDestroyed()) {
+            // Unusable client instance. Nothing to do.
+            return
+        }
 
+        if (!isActive) {
+            // Inactive = free to skip.
+            return
+        }
+
+        if (eq(subscriptionParamsRef.current, subscriptionParams)) {
+            // Subscription params haven't changed. Skipping the rest.
+            return
+        }
+
+        subscriptionParamsRef.current = subscriptionParams
+
+        let sub: ResendSubscription<T> | Subscription<T> | undefined = undefined
+
+        function unsub() {
+            sub?.unsubscribe().catch(() => {})
+            sub = undefined
+            setSubscription(undefined)
+        }
+
+        function shouldSub() {
+            return !cancelled && isMounted() && !client!.isDestroyed()
+        }
+
+        async function subscribe() {
             try {
-                const s = await client.resendSubscriber.subscribe<T>(params, (message: T, metadata: StreamMessage<T>) => {
-                    onMessageRef.current(message, metadata)
+                if (!shouldSub()) {
+                    return
+                }
+
+                sub = await client!.subscribe<T>(subscriptionParams, (message, raw): void => {
+                    if (typeof onMessageRef.current === 'function') {
+                        onMessageRef.current(message, raw)
+                    }
                 })
 
-                if (!cancelled && isMounted()) {
-                    setSub(s)
+                if (!shouldSub()) {
+                    unsub()
+                    return
                 }
+
+                if (typeof onSubscribedRef.current === 'function') {
+                    onSubscribedRef.current()
+                }
+
+                setSubscription(sub!)
             } catch (e) {
                 onErrorRef.current(e)
             }
-        })()
+        }
+
+        subscribe()
 
         return () => {
             cancelled = true
-            setSub(undefined)
+            unsub()
         }
-    }, [client, params, shouldSubscribe, isMounted])
+    }, [client, subscriptionParams, isMounted, isActive])
 
     useEffect(() => {
-        if (!sub || !isActive) { return }
-        onSubscribed()
-    }, [sub, isActive, onSubscribed])
-
-    useEffect(() => () => {
-        sub?.unsubscribe().catch(() => {})
-    }, [sub])
-
-    useEffect(() => {
-        if (!sub || !shouldSubscribe) { return }
-
-        if ('onResent' in sub) {
-            sub.onResent.listen(onResent)
+        if (!subscription) {
+            return () => {}
         }
 
-        sub.onFinally.listen(onUnsubscribed)
-        sub.onError.listen(onError)
+        if ('onResent' in subscription) {
+            subscription.onResent.listen(onResent)
+        }
+
+        subscription.onFinally.listen(onUnsubscribed)
+
+        subscription.onError.listen(onError)
 
         return () => {
-            if ('onResent' in sub) {
-                sub.onResent.unlisten(onResent)
-            }
+            subscription.onError.unlisten(onError)
 
-            sub.onFinally.unlisten(onUnsubscribed)
-            sub.onError.unlisten(onError)
+            subscription.onFinally.unlisten(onUnsubscribed)
+
+            if ('onResent' in subscription) {
+                subscription.onResent.unlisten(onResent)
+            }
         }
-    }, [sub, shouldSubscribe, onSubscribed, onUnsubscribed, onError])
+    }, [subscription, onResent, onUnsubscribed, onError])
 }
 
 export default useSubscription
