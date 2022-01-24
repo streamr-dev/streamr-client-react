@@ -4,12 +4,14 @@ import useClient from '~/useClient'
 import { renderHook, act } from '@testing-library/react-hooks'
 import Provider from '~/Provider'
 
+const wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
+    <Provider {...ConfigTest}>{children}</Provider>
+)
+
 describe('useClient', () => {
-    const wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
-        <Provider {...ConfigTest}>{children}</Provider>
-    )
     it('creates a client', () => {
         const { result, unmount } = renderHook(() => useClient(), { wrapper })
+
         try {
             expect(result.current).toBeInstanceOf(StreamrClient)
         } finally {
@@ -19,10 +21,13 @@ describe('useClient', () => {
 
     it('destroys client on unmount', async () => {
         const { result, unmount } = renderHook(() => useClient(), { wrapper })
+
         const onDestroy = jest.fn()
+
         try {
             expect(result.current).toBeInstanceOf(StreamrClient)
             const client = result.current!
+
             client.onDestroy(onDestroy)
             const onDestroyTask = client.onDestroy()
             unmount()
@@ -36,7 +41,8 @@ describe('useClient', () => {
     })
 
     it('uses same client when options unchanged', () => {
-        let { result, rerender, unmount } = renderHook(() => useClient(), { wrapper })
+        const { result, rerender, unmount } = renderHook(() => useClient(), { wrapper })
+
         try {
             expect(result.current).toBeInstanceOf(StreamrClient)
             const prev = result.current
@@ -53,7 +59,9 @@ describe('useClient', () => {
         const wrapperWithOptions = ({ children }: { children: React.ReactNode }): JSX.Element => (
             <Provider {...ConfigTest} gapFill={gapFill}>{children}</Provider>
         )
-        let { result, rerender, unmount } = renderHook(() => useClient(), { wrapper: wrapperWithOptions })
+
+        const { result, rerender, unmount } = renderHook(() => useClient(), { wrapper: wrapperWithOptions })
+
         try {
             expect(result.current).toBeInstanceOf(StreamrClient)
             const prev = result.current
@@ -62,6 +70,22 @@ describe('useClient', () => {
             expect(result.current).not.toBe(prev)
         } finally {
             unmount()
+        }
+    })
+
+    it('creates a new client when hook arguments are present', () => {
+        const result0 = renderHook(() => useClient(), { wrapper })
+
+        const result1 = renderHook(() => useClient({}), { wrapper })
+
+        try {
+            expect(result0.result.current).toBeInstanceOf(StreamrClient)
+            expect(result1.result.current).toBeInstanceOf(StreamrClient)
+
+            expect(result0.result).not.toBe(result1.result)
+        } finally {
+            result0.unmount()
+            result1.unmount()
         }
     })
 })
