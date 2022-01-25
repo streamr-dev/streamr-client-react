@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "incremental": true,
     "target": "es2019",
     "module": "commonjs",
