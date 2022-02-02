@@ -3,3 +3,6 @@ webpack.config.js
 tsconfig.json
 types/streamr-client.d.ts
 src
+.eslintrc
+jest.config.js
+test
