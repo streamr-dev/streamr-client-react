@@ -37,7 +37,20 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
         onError = defaultErrorHandler,
     } = options
 
+    const [params, setParams] = useState<SubscriptionOptions | undefined>(subscriptionParams)
+
     const client = useClient()
+
+    useEffect(() => {
+        if (eq(params, subscriptionParams)) {
+            // Subscription params haven't changed. Skipping the rest.
+            return
+        }
+
+        setParams(subscriptionParams)
+    }, [params, subscriptionParams])
+
+    const isMounted = useIsMounted()
 
     const onMessageRef = useRef(onMessage)
 
@@ -57,10 +70,6 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
         onSubscribedRef.current = onSubscribed
     }, [onSubscribed])
 
-    const isMounted = useIsMounted()
-
-    const subscriptionParamsRef = useRef(subscriptionParams)
-
     const [subscription, setSubscription] = useState<ResendSubscription<T> | Subscription<T>>()
 
     useEffect(() => {
@@ -76,19 +85,11 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
             return
         }
 
-        if (eq(subscriptionParamsRef.current, subscriptionParams)) {
-            // Subscription params haven't changed. Skipping the rest.
-            return
-        }
-
-        subscriptionParamsRef.current = subscriptionParams
-
         let sub: ResendSubscription<T> | Subscription<T> | undefined = undefined
 
         function unsub() {
             sub?.unsubscribe().catch(() => {})
             sub = undefined
-            setSubscription(undefined)
         }
 
         function shouldSub() {
@@ -112,10 +113,6 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
                     return
                 }
 
-                if (typeof onSubscribedRef.current === 'function') {
-                    onSubscribedRef.current()
-                }
-
                 setSubscription(sub!)
             } catch (e) {
                 onErrorRef.current(e)
@@ -128,28 +125,47 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
             cancelled = true
             unsub()
         }
-    }, [client, subscriptionParams, isMounted, isActive])
+
+    }, [isActive, params, client, isMounted])
+
+    useEffect(() => {
+        if (!subscription) {
+            return
+        }
+
+        if (typeof onSubscribedRef.current === 'function') {
+            onSubscribedRef.current()
+        }
+    }, [subscription])
 
     useEffect(() => {
         if (!subscription) {
             return () => {}
         }
 
-        if ('onResent' in subscription) {
+        if ('onResent' in subscription && typeof subscription?.onResent.listen === 'function') {
             subscription.onResent.listen(onResent)
         }
 
-        subscription.onFinally.listen(onUnsubscribed)
+        if ('onFinally' in subscription && typeof subscription?.onFinally.listen === 'function') {
+            subscription.onFinally.listen(onUnsubscribed)
+        }
 
-        subscription.onError.listen(onError)
+        if ('onError' in subscription && typeof subscription?.onError.listen === 'function') {
+            subscription.onError.listen(onError)
+        }
 
         return () => {
-            subscription.onError.unlisten(onError)
+            if ('onResent' in subscription && typeof (subscription as any)?.onResent.unlisten === 'function') {
+                (subscription as any).onResent.unlisten(onResent)
+            }
 
-            subscription.onFinally.unlisten(onUnsubscribed)
+            if ('onFinally' in subscription && typeof subscription?.onFinally.unlisten === 'function') {
+                subscription.onFinally.unlisten(onUnsubscribed)
+            }
 
-            if ('onResent' in subscription) {
-                subscription.onResent.unlisten(onResent)
+            if ('onError' in subscription && typeof subscription?.onError.unlisten === 'function') {
+                subscription.onError.unlisten(onError)
             }
         }
     }, [subscription, onResent, onUnsubscribed, onError])
