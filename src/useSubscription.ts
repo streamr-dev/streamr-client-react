@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from './useClient'
 import useIsMounted from './useIsMounted'
-import StreamrClient from 'streamr-client'
 import type { ResendSubscription, Subscription } from 'streamr-client'
 
 const defaultErrorHandler = (error: any) => {
@@ -22,18 +21,13 @@ type Options<T> = {
 
 const noop = () => {}
 
-type SubscriptionOptions = (
-    Parameters<StreamrClient['subscriber']['subscribe']>[0]
-    | Parameters<StreamrClient['resendSubscriber']['resendSubscribe']>[0]
-)
+type SubscriptionOptions = any // FIXME: Type it properly.
 
 function useSubscription<T extends object = object>(subscriptionParams: SubscriptionOptions, options: Options<T> = {}): void {
     const {
         isActive = true,
         onMessage = noop,
         onSubscribed = noop,
-        onResent = noop,
-        onUnsubscribed = noop,
         onError = defaultErrorHandler,
     } = options
 
@@ -137,38 +131,6 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
             onSubscribedRef.current()
         }
     }, [subscription])
-
-    useEffect(() => {
-        if (!subscription) {
-            return () => {}
-        }
-
-        if ('onResent' in subscription && typeof subscription?.onResent.listen === 'function') {
-            subscription.onResent.listen(onResent)
-        }
-
-        if ('onFinally' in subscription && typeof subscription?.onFinally.listen === 'function') {
-            subscription.onFinally.listen(onUnsubscribed)
-        }
-
-        if ('onError' in subscription && typeof subscription?.onError.listen === 'function') {
-            subscription.onError.listen(onError)
-        }
-
-        return () => {
-            if ('onResent' in subscription && typeof (subscription as any)?.onResent.unlisten === 'function') {
-                (subscription as any).onResent.unlisten(onResent)
-            }
-
-            if ('onFinally' in subscription && typeof subscription?.onFinally.unlisten === 'function') {
-                subscription.onFinally.unlisten(onUnsubscribed)
-            }
-
-            if ('onError' in subscription && typeof subscription?.onError.unlisten === 'function') {
-                subscription.onError.unlisten(onError)
-            }
-        }
-    }, [subscription, onResent, onUnsubscribed, onError])
 }
 
 export default useSubscription
