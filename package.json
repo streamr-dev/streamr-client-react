@@ -38,6 +38,7 @@
     "eslint-plugin-promise": "^5.1.1",
     "eslint-plugin-react-hooks": "^4.3.0",
     "jest": "^27.3.1",
+    "process": "^0.11.10",
     "react": "^17.0.2",
     "react-test-renderer": "^17.0.2",
     "streamr-client": "^6.0.0-beta.3",
@@ -52,6 +53,7 @@
     "streamr-client-protocol": "^9.1.1"
   },
   "peerDependencies": {
+    "process": "^0.11.10",
     "react": "^17.0.2",
     "streamr-client": "^6.0.0-beta.2"
   }

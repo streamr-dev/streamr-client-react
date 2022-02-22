@@ -26,6 +26,7 @@ module.exports = {
     externals: [
         'react',
         'streamr-client',
+        'process',
     ],
     resolve: {
         alias: {
