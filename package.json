@@ -7,7 +7,7 @@
     "build": "NODE_ENV=development webpack --mode=development --progress",
     "prepack": "npm run build",
     "start": "webpack --progress --colors --watch --mode=development",
-    "test": "NODE_ENV=test jest"
+    "test": "NODE_ENV=test jest --detectOpenHandles"
   },
   "keywords": [
     "streamr",
@@ -41,7 +41,7 @@
     "process": "^0.11.10",
     "react": "^17.0.2",
     "react-test-renderer": "^17.0.2",
-    "streamr-client": "^6.0.1",
+    "streamr-client": "^7.0.0-beta.0",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.2",
@@ -55,6 +55,6 @@
   "peerDependencies": {
     "process": "^0.11.10",
     "react": "^17.0.2",
-    "streamr-client": "^6.0.0-beta.2"
+    "streamr-client": "^7.0.0-beta.0"
   }
 }

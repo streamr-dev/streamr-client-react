@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { StreamrClient, ConfigTest } from 'streamr-client'
 import useClient from '~/useClient'
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react-hooks'
 import Provider from '~/Provider'
 
 const wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
@@ -22,19 +22,13 @@ describe('useClient', () => {
     it('destroys client on unmount', async () => {
         const { result, unmount } = renderHook(() => useClient(), { wrapper })
 
-        const onDestroy = jest.fn()
-
         try {
             expect(result.current).toBeInstanceOf(StreamrClient)
             const client = result.current!
 
-            client.onDestroy(onDestroy)
-            const onDestroyTask = client.onDestroy()
             unmount()
             // immediately destroyed
-            expect(client.isDestroyed()).toBe(true)
-            await onDestroyTask
-            expect(onDestroy).toHaveBeenCalledTimes(1)
+            expect(client.destroy.isStarted()).toBe(true)
         } finally {
             unmount()
         }

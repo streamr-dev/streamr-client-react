@@ -10,7 +10,12 @@ describe('useSubscription', () => {
     let client: StreamrClient
     let cleanup: () => void
 
-    const auth = StreamrClient.generateEthereumAccount()
+    // Use a fixed throwaway account for auth because StreamrClient.generateEthereumAccount
+    // sometimes hangs Jest execution
+    const auth = {
+        address: '0x1a2eF67199a150D5C2E1A6BD62F46027C0574970',
+        privateKey: 'df23b47ac6aaf10df08d6b89b05236c256a63036cee0e36b72e88cc647ff740b',
+    }
     const wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
         <Provider auth={auth}>{children}</Provider>
     )

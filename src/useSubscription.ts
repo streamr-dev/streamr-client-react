@@ -69,7 +69,7 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
     useEffect(() => {
         let cancelled = false
 
-        if (!client || client.isDestroyed()) {
+        if (!client || client.destroy.isStarted()) {
             // Unusable client instance. Nothing to do.
             return
         }
@@ -87,7 +87,7 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
         }
 
         function shouldSub() {
-            return !cancelled && isMounted() && !client!.isDestroyed()
+            return !cancelled && isMounted() && !client!.destroy.isStarted()
         }
 
         async function subscribe() {
