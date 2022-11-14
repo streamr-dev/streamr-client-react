@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from './useClient'
 import useIsMounted from './useIsMounted'
-import type { ResendSubscription, Subscription } from 'streamr-client'
+import type { Subscription } from 'streamr-client'
 
 const defaultErrorHandler = (error: any) => {
     console.error(error)
@@ -64,7 +64,7 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
         onSubscribedRef.current = onSubscribed
     }, [onSubscribed])
 
-    const [subscription, setSubscription] = useState<ResendSubscription<T> | Subscription<T>>()
+    const [subscription, setSubscription] = useState<Subscription<T>>()
 
     useEffect(() => {
         let cancelled = false
@@ -79,7 +79,7 @@ function useSubscription<T extends object = object>(subscriptionParams: Subscrip
             return
         }
 
-        let sub: ResendSubscription<T> | Subscription<T> | undefined = undefined
+        let sub: Subscription<T> | undefined = undefined
 
         function unsub() {
             sub?.unsubscribe().catch(() => {})

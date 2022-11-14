@@ -3,6 +3,7 @@
   "version": "2.1.2",
   "description": "React toolkit for Streamr.",
   "main": "dist/bundle.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "NODE_ENV=development webpack --mode=development --progress",
     "prepack": "npm run build",
@@ -41,7 +42,7 @@
     "process": "^0.11.10",
     "react": "^17.0.2",
     "react-test-renderer": "^17.0.2",
-    "streamr-client": "^7.0.0-beta.0",
+    "streamr-client": "^7.0.0-beta.2",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.2",
