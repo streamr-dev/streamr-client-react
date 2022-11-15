@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import eq from 'deep-equal'
 import useClient from './useClient'
 import useIsMounted from './useIsMounted'
-import type { Subscription } from 'streamr-client'
+import type { Subscription, MessageListener, StreamDefinition, ResendOptions } from 'streamr-client'
 
 const defaultErrorHandler = (error: any) => {
     console.error(error)
@@ -11,8 +11,7 @@ const defaultErrorHandler = (error: any) => {
 type Options<T> = {
     isActive?: boolean
     isRealtime?: boolean
-    // FIXME: Better type annotation for `streamMessage`.
-    onMessage?: (msg: T, streamMessage: any) => void
+    onMessage?: MessageListener<T, unknown>
     onUnsubscribed?: () => void
     onSubscribed?: () => void
     onResent?: () => void
@@ -21,7 +20,9 @@ type Options<T> = {
 
 const noop = () => {}
 
-type SubscriptionOptions = any // FIXME: Type it properly.
+type SubscriptionOptions = StreamDefinition & {
+    resend?: ResendOptions | undefined
+}
 
 function useSubscription<T extends object = object>(subscriptionParams: SubscriptionOptions, options: Options<T> = {}): void {
     const {
