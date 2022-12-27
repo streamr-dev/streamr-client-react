@@ -1,26 +1,40 @@
 import { useEffect, useRef } from 'react'
-import type { StreamMessage } from 'streamr-client'
+import type { ResendOptions, StreamMessage } from 'streamr-client'
 import subscribe from './subscribe'
 import useClient from './useClient'
+import useOpts from './useOpts'
 
 export interface Options<T> {
+    cacheKey?: number | string
     disabled?: boolean
-    onMessage?: (msg: T) => void
-    onError?: (e: any) => void
-    onMessageError?: (e: any) => void
     ignoreUndecodedMessages?: boolean
+    onAfterFinish?: () => void
+    onBeforeStart?: () => void
+    onError?: (e: any) => void
+    onMessage?: (msg: T) => void
+    onMessageError?: (e: any) => void
+}
+
+interface SubscribeOptions extends Options<StreamMessage> {
+    resendOptions?: ResendOptions
 }
 
 export default function useSubscribe(
     streamId: string,
     {
+        cacheKey,
         disabled = false,
         ignoreUndecodedMessages = false,
+        onAfterFinish,
+        onBeforeStart,
         onError,
         onMessage,
         onMessageError,
-    }: Options<StreamMessage> = {}
+        resendOptions: resendOptionsProp,
+    }: SubscribeOptions = {}
 ): void {
+    const resendOptions = useOpts<undefined | ResendOptions>(resendOptionsProp)
+
     const client = useClient()
 
     const onMessageRef = useRef(onMessage)
@@ -41,10 +55,24 @@ export default function useSubscribe(
         onMessageErrorRef.current = onMessageError
     }, [onMessageError])
 
+    const onBeforeStartRef = useRef(onBeforeStart)
+
+    useEffect(() => {
+        onBeforeStartRef.current = onBeforeStart
+    }, [onBeforeStart])
+
+    const onAfterFinishRef = useRef(onAfterFinish)
+
+    useEffect(() => {
+        onAfterFinishRef.current = onAfterFinish
+    }, [onAfterFinish])
+
     useEffect(() => {
         if (disabled || !client) {
             return () => {}
         }
+
+        onBeforeStartRef.current?.()
 
         const queue = subscribe(streamId, client, {
             onError(e) {
@@ -54,6 +82,7 @@ export default function useSubscribe(
                 onMessageErrorRef.current?.(e)
             },
             ignoreUndecodedMessages,
+            resendOptions,
         })
 
         async function fn(q: ReturnType<typeof subscribe>) {
@@ -68,6 +97,8 @@ export default function useSubscribe(
                     break
                 }
             }
+
+            onAfterFinishRef.current?.()
         }
 
         fn(queue)
@@ -75,5 +106,5 @@ export default function useSubscribe(
         return () => {
             queue?.abort()
         }
-    }, [disabled, streamId, client, ignoreUndecodedMessages])
+    }, [disabled, streamId, client, ignoreUndecodedMessages, resendOptions, cacheKey])
 }

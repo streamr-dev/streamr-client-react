@@ -3,21 +3,20 @@ import type { Message, ResendOptions } from 'streamr-client'
 import useClient from './useClient'
 import resend from './resend'
 import useOpts from './useOpts'
-import type { Options as SubscribeOptions } from './useSubscribe'
-
-interface Options<T> extends SubscribeOptions<T> {
-    resendOptions?: ResendOptions
-}
+import type { Options } from './useSubscribe'
 
 export default function useResend(
     streamId: string,
+    resendOptions: ResendOptions = { last: 1 },
     {
+        cacheKey,
         disabled = false,
-        resendOptions = { last: 1 },
-        onMessage,
         ignoreUndecodedMessages = false,
-        onMessageError,
+        onAfterFinish,
+        onBeforeStart,
         onError,
+        onMessage,
+        onMessageError,
     }: Options<Message> = {}
 ): void {
     const opts = useOpts<ResendOptions>(resendOptions)
@@ -42,10 +41,24 @@ export default function useResend(
         onMessageErrorRef.current = onMessageError
     }, [onMessageError])
 
+    const onBeforeStartRef = useRef(onBeforeStart)
+
+    useEffect(() => {
+        onBeforeStartRef.current = onBeforeStart
+    }, [onBeforeStart])
+
+    const onAfterFinishRef = useRef(onAfterFinish)
+
+    useEffect(() => {
+        onAfterFinishRef.current = onAfterFinish
+    }, [onAfterFinish])
+
     useEffect(() => {
         if (!client || disabled) {
             return () => {}
         }
+
+        onBeforeStartRef.current?.()
 
         const queue = resend(streamId, opts, client, {
             onError(e) {
@@ -69,6 +82,8 @@ export default function useResend(
                     break
                 }
             }
+
+            onAfterFinishRef.current?.()
         }
 
         fn(queue)
@@ -76,5 +91,5 @@ export default function useResend(
         return () => {
             queue?.abort()
         }
-    }, [streamId, opts, client, disabled, ignoreUndecodedMessages])
+    }, [streamId, opts, client, disabled, ignoreUndecodedMessages, cacheKey])
 }

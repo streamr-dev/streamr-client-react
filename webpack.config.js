@@ -23,12 +23,7 @@ module.exports = {
             },
         ],
     },
-    externals: [
-        'react',
-        'streamr-client',
-        'streamr-client-protocol',
-        'process',
-    ],
+    externals: ['react', 'streamr-client', 'streamr-client-protocol', 'process'],
     resolve: {
         alias: {
             '~': path.resolve(__dirname, 'src'),
