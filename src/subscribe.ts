@@ -1,4 +1,4 @@
-import type { StreamrClient, Subscription } from 'streamr-client'
+import type { ResendOptions, StreamrClient, Subscription } from 'streamr-client'
 import type { StreamMessage } from 'streamr-client-protocol'
 
 export interface FlowControls<T = unknown> {
@@ -12,10 +12,19 @@ export interface Options {
     onMessageError?: (e: any) => void
 }
 
+interface SubscribeOptions extends Options {
+    resendOptions?: ResendOptions
+}
+
 export default function subscribe(
     streamId: string,
     streamrClient: StreamrClient,
-    { ignoreUndecodedMessages = false, onMessageError, onError }: Options = {}
+    {
+        ignoreUndecodedMessages = false,
+        onError,
+        onMessageError,
+        resendOptions,
+    }: SubscribeOptions = {}
 ): FlowControls<StreamMessage> {
     let sub: undefined | Subscription
 
@@ -31,9 +40,14 @@ export default function subscribe(
     const rs = new ReadableStream<StreamMessage>({
         async start(controller: ReadableStreamDefaultController<StreamMessage>) {
             try {
-                sub = await streamrClient.subscribe({
-                    streamId,
-                })
+                sub = await streamrClient.subscribe(
+                    {
+                        streamId,
+                        resend: resendOptions,
+                    },
+                    // Does not fly without the "legacy" on-message callback.
+                    () => {}
+                )
 
                 if (cancelled) {
                     return void unsub()
