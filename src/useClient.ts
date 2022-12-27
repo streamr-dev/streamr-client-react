@@ -1,28 +1,34 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 import eq from 'deep-equal'
-import { StreamrClient, StreamrClientConfig } from 'streamr-client'
+import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
 
 const EMPTY_CONFIG = {}
 
 const isSSR = typeof window === 'undefined'
 
-function getNewClient(config: StreamrClientConfig): StreamrClient | undefined {
+async function getNewClient(config: StreamrClientConfig): Promise<StreamrClient | undefined> {
     if (config === EMPTY_CONFIG || isSSR) {
         return undefined
     }
 
+    const StreamrClient = (await import('streamr-client')).default
+
     return new StreamrClient(config)
 }
 
-export default function useClient(config: StreamrClientConfig = EMPTY_CONFIG): StreamrClient | undefined {
-    const configRef = useRef(config)
-
+export default function useClient(
+    config: StreamrClientConfig = EMPTY_CONFIG
+): StreamrClient | undefined {
     const parentClient = useContext(ClientContext)
 
-    const [client, setClient] = useState(() => getNewClient(config))
+    const [client, setClient] = useState<undefined | StreamrClient>()
+
+    const configRef = useRef<undefined | StreamrClientConfig>()
 
     useEffect(() => {
+        let mounted = true
+
         if (config === EMPTY_CONFIG) {
             // Leaving `config` out means we're gonna use the provided client.
             return
@@ -35,12 +41,29 @@ export default function useClient(config: StreamrClientConfig = EMPTY_CONFIG): S
 
         configRef.current = config
 
-        setClient(getNewClient(config))
+        async function fn(cfg: StreamrClientConfig) {
+            const newClient = await getNewClient(cfg)
+
+            if (!mounted) {
+                return
+            }
+
+            setClient(newClient)
+        }
+
+        fn(config)
+
+        return () => {
+            mounted = false
+        }
     }, [config])
 
-    useEffect(() => () => {
-        client?.destroy()
-    }, [client])
+    useEffect(
+        () => () => {
+            client?.destroy()
+        },
+        [client]
+    )
 
     return client || parentClient
 }

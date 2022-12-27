@@ -15,7 +15,7 @@ export interface Options {
 export default function subscribe(
     streamId: string,
     streamrClient: StreamrClient,
-    { ignoreUndecodedMessages = false, onMessageError, onError }: Options = {},
+    { ignoreUndecodedMessages = false, onMessageError, onError }: Options = {}
 ): FlowControls<StreamMessage> {
     let sub: undefined | Subscription
 
@@ -38,25 +38,25 @@ export default function subscribe(
                 if (cancelled) {
                     return void unsub()
                 }
-    
+
                 // @ts-expect-error `onMessage` is internal. #lifehack
                 sub.onMessage.listen((streamMessage: StreamMessage) => {
                     controller.enqueue(streamMessage)
                 })
-    
+
                 sub.on('error', (e: any) => {
                     onMessageError?.(e)
-    
+
                     const raw = e.streamMessage
-    
+
                     if (!raw) {
                         return
                     }
-    
+
                     if (!ignoreUndecodedMessages) {
                         controller.enqueue(raw as StreamMessage)
                     }
-                })    
+                })
             } catch (e) {
                 onError?.(e)
                 controller.close()

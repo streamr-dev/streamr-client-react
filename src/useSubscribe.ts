@@ -19,7 +19,7 @@ export default function useSubscribe(
         onError,
         onMessage,
         onMessageError,
-    }: Options<StreamMessage> = {},
+    }: Options<StreamMessage> = {}
 ): void {
     const client = useClient()
 
