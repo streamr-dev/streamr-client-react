@@ -42,20 +42,21 @@
     "process": "^0.11.10",
     "react": "^17.0.2",
     "react-test-renderer": "^17.0.2",
-    "streamr-client": "^7.0.2",
+    "streamr-client": "^7.2.0",
+    "streamr-client-protocol": "^13.0.0",
     "ts-jest": "^27.0.7",
     "ts-loader": "^9.2.6",
-    "typescript": "^4.5.2",
+    "typescript": "^4.9.4",
     "webpack": "^5.64.2",
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
-    "deep-equal": "^2.0.5",
-    "streamr-client-protocol": "^9.1.1"
+    "deep-equal": "^2.0.5"
   },
   "peerDependencies": {
     "process": "^0.11.10",
     "react": "^17.0.2",
-    "streamr-client": "^7.0.0-beta.0"
+    "streamr-client": "^7.2.0",
+    "streamr-client-protocol": "^13.0.0"
   }
 }
