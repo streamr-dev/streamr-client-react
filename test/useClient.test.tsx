@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { StreamrClient, ConfigTest } from 'streamr-client'
+import { StreamrClient, CONFIG_TEST } from 'streamr-client'
 import useClient from '~/useClient'
 import { renderHook } from '@testing-library/react-hooks'
 import Provider from '~/Provider'
 
 const wrapper = ({ children }: { children: React.ReactNode }): JSX.Element => (
-    <Provider {...ConfigTest}>{children}</Provider>
+    <Provider {...CONFIG_TEST}>{children}</Provider>
 )
 
 describe('useClient', () => {
@@ -27,8 +27,8 @@ describe('useClient', () => {
             const client = result.current!
 
             unmount()
-            // immediately destroyed
-            expect(client.destroy.isStarted()).toBe(true)
+            // @ts-expect-error `destroySignal` is private.
+            expect(client.destroySignal.isDestroyed()).toBe(true)
         } finally {
             unmount()
         }
@@ -51,7 +51,7 @@ describe('useClient', () => {
         let gapFill = true
 
         const wrapperWithOptions = ({ children }: { children: React.ReactNode }): JSX.Element => (
-            <Provider {...ConfigTest} gapFill={gapFill}>{children}</Provider>
+            <Provider {...CONFIG_TEST} gapFill={gapFill}>{children}</Provider>
         )
 
         const { result, rerender, unmount } = renderHook(() => useClient(), { wrapper: wrapperWithOptions })
