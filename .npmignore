@@ -5,3 +5,9 @@ types/streamr-client.d.ts
 .eslintrc
 jest.config.js
 test
+/src
+dist/jest*
+dist/tsconfig*
+dist/webpack*
+.prettier*
+.vscode*
