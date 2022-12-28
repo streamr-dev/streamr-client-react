@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react'
-import eq from 'deep-equal'
+import eq from 'react-fast-compare'
 import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
 
@@ -24,7 +24,7 @@ export default function useClient(
 
     const [client, setClient] = useState<undefined | StreamrClient>()
 
-    const configRef = useRef<undefined | StreamrClientConfig>()
+    const configRef = useRef<undefined | StreamrClientConfig>(undefined)
 
     useEffect(() => {
         let mounted = true
