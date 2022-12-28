@@ -1,57 +1,200 @@
 # Streamr-client-react ✨
 
-React hooks and components for [`streamr-client`](https://github.com/streamr-dev/streamr-client-javascript).
+React hooks and components for [`streamr-client`](https://github.com/streamr-dev/network/tree/main/packages/client).
 
 ## Installation
 
+Using `npm`, install the library, and save it to your `package.json` dependencies.
+
 ```
-npm install streamr-client-react
+npm i streamr-client-react streamr-client streamr-client-protocol
 ```
 
-## Usage
+## API
 
-The following example shows how to easily inject a `StreamrClient` instance into your app and log
-messages going through a selected stream.
+### Components
 
-```jsx
-import Provider, { useSubscription } from 'streamr-client-react'
+#### `Provider`
 
-const OhMyStreamr = () => {
-    const onMessage = useCallback((message) => {
-        console.log(message)
-    }, [])
+It holds its own `StreamrClient` instance and – by utilizing the [Context API](https://reactjs.org/docs/context.html) – makes it available to all its children components.
 
-    useSubscription({
-        stream: 'STREAM ID',
-        // For more options see
-        // https://github.com/streamr-dev/streamr-client-javascript#subscription-options
-    }, onMessage)
+```typescript
+import Provider from 'streamr-client-react'
+
+function App() {
+    return <Provider {...options}>You can use `useClient` here!</Provider>
 }
+```
 
-const App = () => {
-    const streamrClientOptions = {
-        // For options see
-        // https://github.com/streamr-dev/streamr-client-javascript#client-options
+---
+
+#### `ClientContext`
+
+If you wanna hack your way around the `useClient` hook for some wholesome reason and directly access the client instance provided by the `Provider` component this is where you start.
+
+```typescript
+import { useContext } from 'react'
+import type { StreamrClient } from 'streamr-client'
+
+function SqrtOfFoo() {
+    const client: undefined | StreamrClient = useContext(ClientContext)
+
+    return null
+}
+```
+
+### Hooks
+
+#### `useClient(config?: StreamrClientConfig)`
+
+If `config` is given, `useClient` gives you a new instance of the client. The hook uses [`deep-equal`](https://www.npmjs.com/package/deep-equal) to avoid unreasonable creation of new instances.
+
+If `config` is skipped, it's gonna return an instance provided by the `Provider` component (`undefined` by default).
+
+See [Config.ts](https://github.com/streamr-dev/network/blob/main/packages/client/src/Config.ts) for more details on `StreamrClientConfig`.
+
+---
+
+#### `useSubscribe(streamId: string, options?: Options)`
+
+It allows you to conveniently subscribe to streams.
+
+```typescript
+import type { ResendOptions, StreamMessage } from 'streamr-client'
+
+interface Options {
+    // Changing `cacheKey` will drop the old subscription and start a new one.
+    cacheKey?: number | string
+    // Set `disabled` to true to make it idle, or to make it drop the previous subscription
+    // and then idle.
+    disabled?: boolean
+    // You can either skip undecoded messages (true), or treat them as other messages (false), and
+    // handle their undecoded content on your own. Useful when you have to show "something".
+    // Default: false
+    ignoreUndecodedMessages?: boolean
+    // A callback triggered after you're done with a subscription and with processing messages.
+    onAfterFinish?: () => void
+    // A callback triggered before subscribing.
+    onBeforeStart?: () => void
+    // A callback triggered when the client fails at subscribing.
+    onError?: (e: any) => void
+    // *The* on-message callback.
+    onMessage?: (msg: StreamMessage) => void
+    // A callback triggered when the client fails to decode a massage.
+    onMessageError?: (e: any) => void
+    // Resend instructions. `undefined` by default (= don't resend anything).
+    resendOptions?: ResendOptions
+}
+```
+
+`onAfterFinish`, `onBeforeStart`, `onError`, `onMessage`, and `onMessageError` are all kept as refs (see [`useRef`](https://reactjs.org/docs/hooks-reference.html#useref)) internally, and for that reason changing them does not trigger resubscribing. Additionally, we track changes to `resendOptions` using [`deep-equal`](https://www.npmjs.com/package/deep-equal) to avoid excessive resubscribing.
+
+See
+
+-   [`client/src/subscribe/Resends.ts`](https://github.com/streamr-dev/network/blob/main/packages/client/src/subscribe/Resends.ts) for more details on `ResendOptions`.
+
+---
+
+#### `useResend(streamId: string, resendOptions: ResendOptions, options?: Options)`
+
+It allows you to resend historical messages without subscribing to the real-time messages.
+
+```typescript
+import type { ResendOptions, Message } from 'streamr-client'
+
+interface Options {
+    // Changing `cacheKey` will drop the old subscription and start a new one.
+    cacheKey?: number | string
+    // Set `disabled` to true to make it idle, or to make it drop the previous subscription
+    // and then idle.
+    disabled?: boolean
+    // You can either skip undecoded messages (true), or treat them as other messages (false), and
+    // handle their undecoded content on your own. Useful when you have to show "something".
+    // Default is false.
+    ignoreUndecodedMessages?: boolean
+    // A callback triggered after you're done with a subscription and with processing messages.
+    onAfterFinish?: () => void
+    // A callback triggered before subscribing.
+    onBeforeStart?: () => void
+    // A callback triggered when the client fails at subscribing.
+    onError?: (e: any) => void
+    // *The* on-message callback.
+    onMessage?: (msg: Message) => void
+    // A callback triggered when the client fails to decode a massage.
+    onMessageError?: (e: any) => void
+}
+```
+
+See
+
+-   [`client/src/subscribe/Resends.ts`](https://github.com/streamr-dev/network/blob/main/packages/client/src/subscribe/Resends.ts) for more details on `ResendOptions`.
+-   [`client/src/Message.ts`](https://github.com/streamr-dev/network/blob/main/packages/client/src/Message.ts) for more details on `Message`.
+
+### Utils
+
+#### `subscribe(streamId: string, client: StreamrClient, options?: Options)`
+
+Subscribes to a stream and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
+
+```typescript
+async function foo(streamId: string, client: StreamrClient) {
+    const queue = subscribe(streamId, client)
+
+    while (true) {
+        const { value: msg, done } = await queue.next()
+
+        if (msg) {
+            // Do something with a message here.
+        }
+
+        if (done) {
+            break
+        }
     }
 
-    return (
-        <Provider {...streamrClientOptions}>
-            <OhMyStreamr />
-        </Provider>
-    )
-```
-
-`useSubscription` is a wrapper around `client.subscribe` and is built using `useClient`
-hook. Getting the client for arbitrary use is simple.
-
-```jsx
-const OhMyStreamr = () => {
-    const client = useClient()
-
-    client.publish('STREAM ID', {
-        temperature: 25.4,
-    })
+    // Use `queue.abort()` to unsubscribe.
 }
 ```
 
-Refer to [`streamr-client`](https://github.com/streamr-dev/streamr-client-javascript) for more options.
+Available options:
+
+```typescript
+interface Options {
+    // You can either skip undecoded messages (true), or treat them as other messages (false), and
+    // handle their undecoded content on your own. Useful when you have to show "something".
+    // Default is false.
+    ignoreUndecodedMessages?: boolean
+    // A callback triggered when the client fails at subscribing.
+    onError?: (e: any) => void
+    // Resend instructions. `undefined` by default (= don't resend anything).
+    onMessageError?: (e: any) => void
+}
+```
+
+---
+
+#### `resend(streamId: string, resendOptions: ResendOptions, streamrClient: StreamrClient, options?: Options)`
+
+Subscribes to a stream of historical messages (only) and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
+
+```typescript
+async function foo(streamId: string, client: StreamrClient) {
+    const queue = resend(streamId, { last: 10 }, client)
+
+    while (true) {
+        const { value: msg, done } = await queue.next()
+
+        if (msg) {
+            // Do something with a message here.
+        }
+
+        if (done) {
+            break
+        }
+    }
+
+    // Use `queue.abort()` to ignore further data.
+}
+```
+
+`subscribe` and `resend` share the options.
