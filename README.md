@@ -47,7 +47,7 @@ function SqrtOfFoo() {
 
 #### `useClient(config?: StreamrClientConfig)`
 
-If `config` is given, `useClient` gives you a new instance of the client. The hook uses [`deep-equal`](https://www.npmjs.com/package/deep-equal) to avoid unreasonable creation of new instances.
+If `config` is given, `useClient` gives you a new instance of the client. The hook uses [`react-fast-compare`](https://github.com/FormidableLabs/react-fast-compare) to avoid unreasonable creation of new instances.
 
 If `config` is skipped, it's gonna return an instance provided by the `Provider` component (`undefined` by default).
 
@@ -87,7 +87,7 @@ interface Options {
 }
 ```
 
-`onAfterFinish`, `onBeforeStart`, `onError`, `onMessage`, and `onMessageError` are all kept as refs (see [`useRef`](https://reactjs.org/docs/hooks-reference.html#useref)) internally, and for that reason changing them does not trigger resubscribing. Additionally, we track changes to `resendOptions` using [`deep-equal`](https://www.npmjs.com/package/deep-equal) to avoid excessive resubscribing.
+`onAfterFinish`, `onBeforeStart`, `onError`, `onMessage`, and `onMessageError` are all kept as refs (see [`useRef`](https://reactjs.org/docs/hooks-reference.html#useref)) internally, and for that reason changing them does not trigger resubscribing. Additionally, we track changes to `resendOptions` using [`react-fast-compare`](https://github.com/FormidableLabs/react-fast-compare) to avoid excessive resubscribing.
 
 See
 

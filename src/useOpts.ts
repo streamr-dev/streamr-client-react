@@ -1,4 +1,4 @@
-import eq from 'deep-equal'
+import eq from 'react-fast-compare'
 import { useEffect, useRef, useState } from 'react'
 
 export default function useOpts<T = any>(arg: T): T {
