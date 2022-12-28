@@ -58,7 +58,6 @@
   "peerDependencies": {
     "process": "^0.11.10",
     "react": "^18.2.0",
-    "streamr-client": "^7.2.0",
-    "streamr-client-protocol": "^13.0.0"
+    "streamr-client": "^7.2.0"
   }
 }
