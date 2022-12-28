@@ -65,5 +65,5 @@ export default function useClient(
         [client]
     )
 
-    return client || parentClient
+    return config === EMPTY_CONFIG ? parentClient : client
 }
