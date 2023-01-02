@@ -6,7 +6,7 @@ import useOpts from './useOpts'
 import type { Options } from './useSubscribe'
 
 export default function useResend(
-    stream: StreamDefinition,
+    streamDef: StreamDefinition,
     resendOptions: ResendOptions = { last: 1 },
     {
         cacheKey,
@@ -19,6 +19,8 @@ export default function useResend(
         onMessageError,
     }: Options<Message> = {}
 ): void {
+    const stream = useOpts<StreamDefinition>(streamDef)
+
     const opts = useOpts<ResendOptions>(resendOptions)
 
     const client = useClient()
