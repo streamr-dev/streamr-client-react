@@ -20,7 +20,7 @@ interface SubscribeOptions extends Options<StreamMessage> {
 }
 
 export default function useSubscribe(
-    stream: StreamDefinition,
+    streamDef: StreamDefinition,
     {
         cacheKey,
         disabled = false,
@@ -33,6 +33,8 @@ export default function useSubscribe(
         resendOptions: resendOptionsProp,
     }: SubscribeOptions = {}
 ): void {
+    const stream = useOpts<StreamDefinition>(streamDef)
+
     const resendOptions = useOpts<undefined | ResendOptions>(resendOptionsProp)
 
     const client = useClient()
