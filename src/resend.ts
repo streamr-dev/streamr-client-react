@@ -1,8 +1,8 @@
-import type { ResendOptions, StreamrClient, Message } from 'streamr-client'
+import type { ResendOptions, StreamrClient, Message, StreamDefinition } from 'streamr-client'
 import { FlowControls, Options } from './subscribe'
 
 export default function resend(
-    streamId: string,
+    stream: StreamDefinition,
     options: ResendOptions,
     streamrClient: StreamrClient,
     { ignoreUndecodedMessages = false, onMessageError, onError }: Options = {}
@@ -10,7 +10,7 @@ export default function resend(
     const rs = new ReadableStream<Message>({
         async start(controller: ReadableStreamDefaultController<Message>) {
             try {
-                const queue = await streamrClient.resend(streamId, options)
+                const queue = await streamrClient.resend(stream, options)
 
                 // @ts-expect-error `onError` is internal.
                 queue.onError.listen((e: any) => {

@@ -1,3 +1,6 @@
 {
-  "extends": "eslint-config-streamr-ts"
+    "extends": "eslint-config-streamr-ts",
+    "rules": {
+        "indent": "off"
+    }
 }

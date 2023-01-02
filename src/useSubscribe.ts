@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { ResendOptions, StreamMessage } from 'streamr-client'
+import type { ResendOptions, StreamDefinition, StreamMessage } from 'streamr-client'
 import subscribe from './subscribe'
 import useClient from './useClient'
 import useOpts from './useOpts'
@@ -20,7 +20,7 @@ interface SubscribeOptions extends Options<StreamMessage> {
 }
 
 export default function useSubscribe(
-    streamId: string,
+    stream: StreamDefinition,
     {
         cacheKey,
         disabled = false,
@@ -74,7 +74,7 @@ export default function useSubscribe(
 
         onBeforeStartRef.current?.()
 
-        const queue = subscribe(streamId, client, {
+        const queue = subscribe(stream, client, {
             onError(e) {
                 onErrorRef.current?.(e)
             },
@@ -106,5 +106,5 @@ export default function useSubscribe(
         return () => {
             queue?.abort()
         }
-    }, [disabled, streamId, client, ignoreUndecodedMessages, resendOptions, cacheKey])
+    }, [disabled, stream, client, ignoreUndecodedMessages, resendOptions, cacheKey])
 }

@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
-import type { Message, ResendOptions } from 'streamr-client'
+import type { Message, ResendOptions, StreamDefinition } from 'streamr-client'
 import useClient from './useClient'
 import resend from './resend'
 import useOpts from './useOpts'
 import type { Options } from './useSubscribe'
 
 export default function useResend(
-    streamId: string,
+    stream: StreamDefinition,
     resendOptions: ResendOptions = { last: 1 },
     {
         cacheKey,
@@ -60,7 +60,7 @@ export default function useResend(
 
         onBeforeStartRef.current?.()
 
-        const queue = resend(streamId, opts, client, {
+        const queue = resend(stream, opts, client, {
             onError(e) {
                 onErrorRef.current?.(e)
             },
@@ -91,5 +91,5 @@ export default function useResend(
         return () => {
             queue?.abort()
         }
-    }, [streamId, opts, client, disabled, ignoreUndecodedMessages, cacheKey])
+    }, [stream, opts, client, disabled, ignoreUndecodedMessages, cacheKey])
 }
