@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react'
 import eq from 'react-fast-compare'
 import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
+import useOpts from './useOpts'
 
 const EMPTY_CONFIG = {}
 
@@ -24,25 +25,18 @@ export default function useClient(
 
     const [client, setClient] = useState<undefined | StreamrClient>()
 
-    const configRef = useRef<undefined | StreamrClientConfig>(undefined)
+    const conf = useOpts(config)
 
     useEffect(() => {
         let mounted = true
 
-        if (config === EMPTY_CONFIG) {
+        if (conf === EMPTY_CONFIG) {
             // Leaving `config` out means we're gonna use the provided client.
             return
         }
 
-        if (eq(configRef.current, config)) {
-            // Configuration hasn't changed. We don't need a new StreamrClient instance.
-            return
-        }
-
-        configRef.current = config
-
-        async function fn(cfg: StreamrClientConfig) {
-            const newClient = await getNewClient(cfg)
+        async function fn() {
+            const newClient = await getNewClient(conf)
 
             if (!mounted) {
                 return
@@ -51,12 +45,12 @@ export default function useClient(
             setClient(newClient)
         }
 
-        fn(config)
+        fn()
 
         return () => {
             mounted = false
         }
-    }, [config])
+    }, [conf])
 
     useEffect(
         () => () => {
