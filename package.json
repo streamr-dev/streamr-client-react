@@ -1,6 +1,6 @@
 {
   "name": "streamr-client-react",
-  "version": "3.0.0-beta.3",
+  "version": "3.0.0-beta.4",
   "description": "React toolkit for Streamr.",
   "main": "dist/bundle.js",
   "types": "dist/src/index.d.ts",
