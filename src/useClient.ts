@@ -1,5 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react'
-import eq from 'react-fast-compare'
+import { useContext, useEffect, useState } from 'react'
 import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
 import useOpts from './useOpts'
