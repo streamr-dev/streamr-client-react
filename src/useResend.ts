@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import type { Message, ResendOptions, StreamDefinition } from 'streamr-client'
+import type { ResendOptions, StreamDefinition } from 'streamr-client'
+import type { StreamMessage } from 'streamr-client-protocol'
 import useClient from './useClient'
 import resend from './resend'
 import useOpts from './useOpts'
@@ -17,7 +18,7 @@ export default function useResend(
         onError,
         onMessage,
         onMessageError,
-    }: Options<Message> = {}
+    }: Options<StreamMessage> = {}
 ): void {
     const stream = useOpts<StreamDefinition>(streamDef)
 
