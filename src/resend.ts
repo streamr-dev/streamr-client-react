@@ -40,6 +40,11 @@ export default function resend(
                         controller.enqueue(msg)
                     }
                 })
+
+                for await (const _ of queue) {
+                    // An alternative to a custom `onFinally`. It blocks until we're done
+                    // with the resend.
+                }
             } catch (e) {
                 onError?.(e)
             } finally {
