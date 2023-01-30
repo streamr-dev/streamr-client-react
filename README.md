@@ -25,7 +25,9 @@ const OhMyStreamr = () => {
         stream: 'STREAM ID',
         // For more options see
         // https://github.com/streamr-dev/streamr-client-javascript#subscription-options
-    }, onMessage)
+    }, 
+        { onMessage: onMessage }
+    )
 }
 
 const App = () => {
