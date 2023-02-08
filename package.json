@@ -4,6 +4,7 @@
   "description": "React toolkit for Streamr.",
   "main": "index.js",
   "types": "index.d.ts",
+  "type": "module",
   "scripts": {
     "prettier": "prettier --write src",
     "start": "rollup -c -w",
