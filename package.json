@@ -5,6 +5,10 @@
   "main": "index.js",
   "types": "index.d.ts",
   "type": "module",
+  "exports": {
+    "import": "./index.js",
+    "require": "./index.cjs"
+  },
   "scripts": {
     "prettier": "prettier --write src",
     "start": "rollup -c -w",
