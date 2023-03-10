@@ -26,6 +26,10 @@ export default [
                 file: `./index.js`,
                 format: 'es',
             },
+            {
+                file: './index.cjs',
+                format: 'cjs'
+            }
         ],
     }),
     bundle({
