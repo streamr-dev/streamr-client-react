@@ -7,8 +7,19 @@ React hooks and components for [`streamr-client`](https://github.com/streamr-dev
 Using `npm`, install the library, and save it to your `package.json` dependencies.
 
 ```
-npm i streamr-client-react react-fast-compare streamr-client
+npm i streamr-client-react
 ```
+
+The library relies on a collection of peer dependencies:
+
+```
+process ^0.11.10
+react >=16.8.0
+react-fast-compare ^3.2.0
+streamr-client >=7
+```
+
+Make sure you install them, too!
 
 ## API
 
@@ -35,6 +46,7 @@ If you wanna hack your way around the `useClient` hook for some wholesome reason
 ```typescript
 import { useContext } from 'react'
 import type { StreamrClient } from 'streamr-client'
+import { ClientContext } from 'streamr-client-react'
 
 function SqrtOfFoo() {
     const client: undefined | StreamrClient = useContext(ClientContext)
@@ -47,6 +59,10 @@ function SqrtOfFoo() {
 
 #### `useClient(config?: StreamrClientConfig)`
 
+```tsx
+import { useClient } from 'streamr-client-react'
+```
+
 If `config` is given, `useClient` gives you a new instance of the client. The hook uses [`react-fast-compare`](https://github.com/FormidableLabs/react-fast-compare) to avoid unreasonable creation of new instances.
 
 If `config` is skipped, it's gonna return an instance provided by the `Provider` component (`undefined` by default).
@@ -56,6 +72,10 @@ See [Config.ts](https://github.com/streamr-dev/network/blob/main/packages/client
 ---
 
 #### `useSubscribe(streamId: string, options?: Options)`
+
+```tsx
+import { useSubscribe } from 'streamr-client-react'
+```
 
 It allows you to conveniently subscribe to streams.
 
@@ -97,6 +117,10 @@ See
 
 #### `useResend(streamId: string, resendOptions: ResendOptions, options?: Options)`
 
+```tsx
+import { useResend } from 'streamr-client-react'
+```
+
 It allows you to resend historical messages without subscribing to the real-time messages.
 
 ```typescript
@@ -133,6 +157,10 @@ See
 ### Utils
 
 #### `subscribe(streamId: string, client: StreamrClient, options?: Options)`
+
+```tsx
+import { subscribe } from 'streamr-client-react'
+```
 
 Subscribes to a stream and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
 
@@ -174,6 +202,10 @@ interface Options {
 ---
 
 #### `resend(streamId: string, resendOptions: ResendOptions, streamrClient: StreamrClient, options?: Options)`
+
+```tsx
+import { resend } from 'streamr-client-react'
+```
 
 Subscribes to a stream of historical messages (only) and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
 
