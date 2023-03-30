@@ -1,23 +1,19 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "incremental": true,
-    "target": "es2019",
-    "module": "commonjs",
-    "jsx": "react",
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "strict": true,
-    "noImplicitAny": true,
-    "baseUrl": ".",
-    "paths": {
-      "~": ["src"],
-      "~/*": ["src/*"]
-    },
-    "types": ["jest"],
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "compilerOptions": {
+        "baseUrl": ".",
+        "jsx": "preserve",
+        "sourceMap": true,
+        "strict": true,
+        "target": "ESNext",
+        "module": "ESNext",
+        "paths": {
+            "~": ["src"],
+            "~/*": ["src/*"]
+        },
+        "types": ["jest"],
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node"
+    }
 }

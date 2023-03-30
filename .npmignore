@@ -1,7 +1,9 @@
 .babelrc
-webpack.config.js
-tsconfig.json
-types/streamr-client.d.ts
+.envrc
 .eslintrc
-jest.config.js
+.prettier*
+.vscode*
+/*.config.mjs
+/*.json
+/src
 test

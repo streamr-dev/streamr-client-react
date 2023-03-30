@@ -1,46 +1,62 @@
-import { useContext, useEffect, useRef, useState } from 'react'
-import eq from 'deep-equal'
-import { StreamrClient, StreamrClientConfig } from 'streamr-client'
+import { useContext, useEffect, useState } from 'react'
+import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
+import useOpts from './useOpts'
 
 const EMPTY_CONFIG = {}
 
 const isSSR = typeof window === 'undefined'
 
-function getNewClient(config: StreamrClientConfig): StreamrClient | undefined {
+async function getNewClient(config: StreamrClientConfig): Promise<StreamrClient | undefined> {
     if (config === EMPTY_CONFIG || isSSR) {
         return undefined
     }
 
+    const StreamrClient = (await import('streamr-client')).default
+
     return new StreamrClient(config)
 }
 
-export default function useClient(config: StreamrClientConfig = EMPTY_CONFIG): StreamrClient | undefined {
-    const configRef = useRef(config)
-
+export default function useClient(
+    config: StreamrClientConfig = EMPTY_CONFIG
+): StreamrClient | undefined {
     const parentClient = useContext(ClientContext)
 
-    const [client, setClient] = useState(() => getNewClient(config))
+    const [client, setClient] = useState<undefined | StreamrClient>()
+
+    const conf = useOpts(config)
 
     useEffect(() => {
-        if (config === EMPTY_CONFIG) {
+        let mounted = true
+
+        if (conf === EMPTY_CONFIG) {
             // Leaving `config` out means we're gonna use the provided client.
             return
         }
 
-        if (eq(configRef.current, config)) {
-            // Configuration hasn't changed. We don't need a new StreamrClient instance.
-            return
+        async function fn() {
+            const newClient = await getNewClient(conf)
+
+            if (!mounted) {
+                return
+            }
+
+            setClient(newClient)
         }
 
-        configRef.current = config
+        fn()
 
-        setClient(getNewClient(config))
-    }, [config])
+        return () => {
+            mounted = false
+        }
+    }, [conf])
 
-    useEffect(() => () => {
-        client?.destroy()
-    }, [client])
+    useEffect(
+        () => () => {
+            client?.destroy()
+        },
+        [client]
+    )
 
-    return client || parentClient
+    return config === EMPTY_CONFIG ? parentClient : client
 }
