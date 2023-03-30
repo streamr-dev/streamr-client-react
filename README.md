@@ -7,7 +7,7 @@ React hooks and components for [`streamr-client`](https://github.com/streamr-dev
 Using `npm`, install the library, and save it to your `package.json` dependencies.
 
 ```
-npm i streamr-client-react react-fast-compare streamr-client streamr-client-protocol
+npm i streamr-client-react react-fast-compare streamr-client
 ```
 
 ## API
