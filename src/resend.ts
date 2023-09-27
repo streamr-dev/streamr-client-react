@@ -19,8 +19,8 @@ export default function resend(
                     return
                 }
 
-                // @ts-expect-error `onMessage` is internal. #lifehack
-                queue.onMessage.listen((streamMessage: StreamMessage) => {
+                // @ts-expect-error `pipeline.onMessage` is internal. #lifehack
+                queue.pipeline.onMessage.listen((streamMessage: StreamMessage) => {
                     controller.enqueue(streamMessage)
                 })
 

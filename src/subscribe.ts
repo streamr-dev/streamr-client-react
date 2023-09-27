@@ -60,8 +60,8 @@ export default function subscribe(
                     return void unsub()
                 }
 
-                // @ts-expect-error `onMessage` is internal. #lifehack
-                sub.onMessage.listen((streamMessage: StreamMessage) => {
+                // @ts-expect-error `pipeline.onMessage` is internal. #lifehack
+                sub.pipeline.onMessage.listen((streamMessage: StreamMessage) => {
                     controller.enqueue(streamMessage)
                 })
 
