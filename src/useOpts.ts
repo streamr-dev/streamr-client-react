@@ -1,20 +1,12 @@
 import eq from 'react-fast-compare'
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 
-export default function useOpts<T = any>(arg: T): T {
+export default function useOpts<T = unknown>(arg: T): T {
     const argRef = useRef<T>(arg)
 
-    const [result, setResult] = useState<T>(arg)
-
-    useEffect(() => {
-        if (eq(arg, argRef.current)) {
-            return
-        }
-
-        setResult(arg)
-
+    if (!eq(arg, argRef.current)) {
         argRef.current = arg
-    }, [arg])
+    }
 
-    return result
+    return argRef.current
 }
