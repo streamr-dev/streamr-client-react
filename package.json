@@ -1,6 +1,6 @@
 {
   "name": "streamr-client-react",
-  "version": "3.1.0-internal.0",
+  "version": "3.1.0-internal.1",
   "description": "React toolkit for Streamr.",
   "main": "index.js",
   "types": "index.d.ts",
