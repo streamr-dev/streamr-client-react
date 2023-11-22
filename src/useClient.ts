@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useReducer, useState } from 'react'
 import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
 import useOpts from './useOpts'
@@ -26,6 +26,8 @@ export default function useClient(
 
     const conf = useOpts(config)
 
+    const [cacheKey, invalidate] = useReducer((x) => x + 1, 0)
+
     useEffect(() => {
         let mounted = true
 
@@ -36,6 +38,13 @@ export default function useClient(
 
         async function fn() {
             const newClient = await getNewClient(conf)
+
+            if (newClient) {
+                // @ts-expect-error `destroySignal` is private and there's no `onDestroy` on the client.
+                newClient.destroySignal.onDestroy.listen(() => {
+                    invalidate()
+                })
+            }
 
             if (!mounted) {
                 return
@@ -49,7 +58,7 @@ export default function useClient(
         return () => {
             mounted = false
         }
-    }, [conf])
+    }, [conf, cacheKey])
 
     useEffect(
         () => () => {
