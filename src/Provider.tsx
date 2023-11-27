@@ -5,10 +5,11 @@ import useClient from './useClient'
 
 export interface Props extends StreamrClientConfig {
     children: ReactNode
+    cacheKey?: string | number | undefined
 }
 
-export default function Provider({ children, ...props }: Props): ReactElement | null {
-    const client = useClient(props)
+export default function Provider({ children, cacheKey, ...props }: Props): ReactElement | null {
+    const client = useClient(props, cacheKey)
 
     return <ClientContext.Provider value={client}>{children}</ClientContext.Provider>
 }
