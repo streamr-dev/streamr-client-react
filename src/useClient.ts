@@ -38,11 +38,15 @@ export default function useClient(
         void (async () => {
             const newClient = await getNewClient(conf)
 
-            if (!mounted) {
-                return
+            if (mounted) {
+                return void setClient(newClient)
             }
 
-            setClient(newClient)
+            /**
+             * Our newly created client goes to waste because the current
+             * `useEffect` got unmounted in the process.
+             */
+            newClient?.destroy()
         })()
 
         return () => {
