@@ -1,4 +1,4 @@
-import { useContext, useEffect, useReducer, useRef, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
 import ClientContext from './ClientContext'
 import useOpts from './useOpts'
@@ -27,8 +27,6 @@ export default function useClient(
 
     const conf = useOpts(config)
 
-    const lastAttemptAtRef = useRef(0)
-
     useEffect(() => {
         let mounted = true
 
@@ -38,39 +36,7 @@ export default function useClient(
         }
 
         void (async () => {
-            /**
-             * Freeze new client creations for a max of 2s. Background: if each new
-             * client instance fails to take off (gets destroyed immediately) we'd
-             * normally end up in an endless loop of failed attempts.
-             */
-            const freezeMillis = Math.max(0, 2000 - (Date.now() - lastAttemptAtRef.current))
-
-            if (freezeMillis) {
-                await new Promise((resolve) => void setTimeout(resolve, freezeMillis))
-
-                if (!mounted) {
-                    return
-                }
-            }
-
-            lastAttemptAtRef.current = Date.now()
-
             const newClient = await getNewClient(conf)
-
-            if (newClient) {
-                // @ts-expect-error `destroySignal` is private and there's no `onDestroy` on the client.
-                newClient.destroySignal.onDestroy.listen(() => {
-                    if (!mounted) {
-                        return
-                    }
-
-                    /**
-                     * Only reset the client if the current on is the one we remember. Otherwise
-                     * we may be destroying valid instances. It'd be a no-no.
-                     */
-                    setClient((c) => (c === newClient ? void 0 : c))
-                })
-            }
 
             if (!mounted) {
                 return
