@@ -13,6 +13,11 @@ export default function resend(
     const rs = new ReadableStream<StreamMessage>({
         async start(controller: ReadableStreamDefaultController<StreamMessage>) {
             try {
+                // @ts-expect-error `destroySignal` is private.
+                if (streamrClient.destroySignal.isDestroyed()) {
+                    return
+                }
+
                 const queue = await streamrClient.resend(stream, options)
 
                 if (cancelled) {

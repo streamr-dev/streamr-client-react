@@ -40,6 +40,11 @@ export default function subscribe(
     const rs = new ReadableStream<StreamMessage>({
         async start(controller: ReadableStreamDefaultController<StreamMessage>) {
             try {
+                // @ts-expect-error `destroySignal` is private.
+                if (streamrClient.destroySignal.isDestroyed()) {
+                    return
+                }
+
                 const options =
                     typeof stream === 'string'
                         ? {
