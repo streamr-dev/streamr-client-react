@@ -6,7 +6,7 @@ import url from '@rollup/plugin-url'
 function bundle(config) {
     return {
         ...config,
-        external: ['react', 'react/jsx-runtime', 'streamr-client', 'process', 'react-fast-compare'],
+        external: ['react', 'react/jsx-runtime', '@streamr/sdk', 'process', 'react-fast-compare'],
     }
 }
 
