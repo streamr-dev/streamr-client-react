@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
-import type { ResendOptions, StreamDefinition, StreamMessage } from 'streamr-client'
+import type { ResendOptions, StreamDefinition } from '@streamr/sdk'
+import type { StreamMessage } from 'streamr-client-protocol'
 import subscribe from './subscribe'
 import useClient from './useClient'
 import useOpts from './useOpts'
@@ -41,33 +42,33 @@ export default function useSubscribe(
 
     const onMessageRef = useRef(onMessage)
 
-    useEffect(() => {
+    if (onMessageRef.current !== onMessage) {
         onMessageRef.current = onMessage
-    }, [onMessage])
+    }
 
     const onErrorRef = useRef(onError)
 
-    useEffect(() => {
+    if (onErrorRef.current !== onError) {
         onErrorRef.current = onError
-    }, [onError])
+    }
 
     const onMessageErrorRef = useRef(onMessageError)
 
-    useEffect(() => {
+    if (onMessageErrorRef.current !== onMessageError) {
         onMessageErrorRef.current = onMessageError
-    }, [onMessageError])
+    }
 
     const onBeforeStartRef = useRef(onBeforeStart)
 
-    useEffect(() => {
+    if (onBeforeStartRef.current !== onBeforeStart) {
         onBeforeStartRef.current = onBeforeStart
-    }, [onBeforeStart])
+    }
 
     const onAfterFinishRef = useRef(onAfterFinish)
 
-    useEffect(() => {
+    if (onAfterFinishRef.current !== onAfterFinish) {
         onAfterFinishRef.current = onAfterFinish
-    }, [onAfterFinish])
+    }
 
     useEffect(() => {
         if (disabled || !client) {
@@ -87,7 +88,7 @@ export default function useSubscribe(
             resendOptions,
         })
 
-        async function fn(q: ReturnType<typeof subscribe>) {
+        void (async (q: ReturnType<typeof subscribe>) => {
             while (true) {
                 const { value, done } = await q.next()
 
@@ -101,9 +102,7 @@ export default function useSubscribe(
             }
 
             onAfterFinishRef.current?.()
-        }
-
-        fn(queue)
+        })(queue)
 
         return () => {
             queue?.abort()

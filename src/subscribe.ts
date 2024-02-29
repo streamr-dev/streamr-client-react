@@ -1,4 +1,4 @@
-import type { ResendOptions, StreamDefinition, StreamrClient, Subscription } from 'streamr-client'
+import type { ResendOptions, StreamDefinition, StreamrClient, Subscription } from '@streamr/sdk'
 import type { StreamMessage } from 'streamr-client-protocol'
 
 export interface FlowControls<T = unknown> {
@@ -40,6 +40,11 @@ export default function subscribe(
     const rs = new ReadableStream<StreamMessage>({
         async start(controller: ReadableStreamDefaultController<StreamMessage>) {
             try {
+                // @ts-expect-error `destroySignal` is private.
+                if (streamrClient.destroySignal.isDestroyed()) {
+                    return
+                }
+
                 const options =
                     typeof stream === 'string'
                         ? {
@@ -60,8 +65,8 @@ export default function subscribe(
                     return void unsub()
                 }
 
-                // @ts-expect-error `onMessage` is internal. #lifehack
-                sub.onMessage.listen((streamMessage: StreamMessage) => {
+                // @ts-expect-error `pipeline.onMessage` is internal. #lifehack
+                sub.pipeline.onMessage.listen((streamMessage: StreamMessage) => {
                     controller.enqueue(streamMessage)
                 })
 

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
+import type { StreamrClient, StreamrClientConfig } from '@streamr/sdk'
 import ClientContext from './ClientContext'
 import useOpts from './useOpts'
 
@@ -12,13 +12,14 @@ async function getNewClient(config: StreamrClientConfig): Promise<StreamrClient 
         return undefined
     }
 
-    const StreamrClient = (await import('streamr-client')).default
+    const StreamrClient = (await import('@streamr/sdk')).default
 
     return new StreamrClient(config)
 }
 
 export default function useClient(
-    config: StreamrClientConfig = EMPTY_CONFIG
+    config: StreamrClientConfig = EMPTY_CONFIG,
+    cacheKey?: string | number | undefined
 ): StreamrClient | undefined {
     const parentClient = useContext(ClientContext)
 
@@ -31,32 +32,29 @@ export default function useClient(
 
         if (conf === EMPTY_CONFIG) {
             // Leaving `config` out means we're gonna use the provided client.
-            return
+            return void setClient(undefined)
         }
 
-        async function fn() {
+        void (async () => {
             const newClient = await getNewClient(conf)
 
-            if (!mounted) {
-                return
+            if (mounted) {
+                return void setClient(newClient)
             }
 
-            setClient(newClient)
-        }
-
-        fn()
+            /**
+             * Our newly created client goes to waste because the current
+             * `useEffect` got unmounted in the process.
+             */
+            newClient?.destroy()
+        })()
 
         return () => {
             mounted = false
         }
-    }, [conf])
+    }, [conf, cacheKey])
 
-    useEffect(
-        () => () => {
-            client?.destroy()
-        },
-        [client]
-    )
+    useEffect(() => () => void client?.destroy(), [client])
 
     return config === EMPTY_CONFIG ? parentClient : client
 }

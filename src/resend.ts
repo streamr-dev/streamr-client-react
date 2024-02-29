@@ -1,4 +1,4 @@
-import type { ResendOptions, StreamDefinition, StreamrClient } from 'streamr-client'
+import type { ResendOptions, StreamDefinition, StreamrClient } from '@streamr/sdk'
 import type { StreamMessage } from 'streamr-client-protocol'
 import { FlowControls, Options } from './subscribe'
 
@@ -13,14 +13,19 @@ export default function resend(
     const rs = new ReadableStream<StreamMessage>({
         async start(controller: ReadableStreamDefaultController<StreamMessage>) {
             try {
+                // @ts-expect-error `destroySignal` is private.
+                if (streamrClient.destroySignal.isDestroyed()) {
+                    return
+                }
+
                 const queue = await streamrClient.resend(stream, options)
 
                 if (cancelled) {
                     return
                 }
 
-                // @ts-expect-error `onMessage` is internal. #lifehack
-                queue.onMessage.listen((streamMessage: StreamMessage) => {
+                // @ts-expect-error `pipeline.onMessage` is internal. #lifehack
+                queue.pipeline.onMessage.listen((streamMessage: StreamMessage) => {
                     controller.enqueue(streamMessage)
                 })
 

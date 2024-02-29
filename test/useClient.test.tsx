@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { StreamrClient, CONFIG_TEST, StreamrClientConfig } from 'streamr-client'
+import { StreamrClient, CONFIG_TEST, StreamrClientConfig } from '@streamr/sdk'
 import useClient from '~/useClient'
 import { renderHook } from '@testing-library/react-hooks'
 import Provider from '~/Provider'

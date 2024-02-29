@@ -1,6 +1,6 @@
 # Streamr-client-react ✨
 
-React hooks and components for [`streamr-client`](https://github.com/streamr-dev/network/tree/main/packages/client).
+React hooks and components for [`@streamr/sdk`](https://github.com/streamr-dev/network/tree/main/packages/client).
 
 ## Installation
 
@@ -16,7 +16,7 @@ The library relies on a collection of peer dependencies:
 process ^0.11.10
 react >=16.8.0
 react-fast-compare ^3.2.0
-streamr-client >=7
+@streamr/sdk >= 100.0.0
 ```
 
 Make sure you install them, too!
@@ -45,7 +45,7 @@ If you wanna hack your way around the `useClient` hook for some wholesome reason
 
 ```typescript
 import { useContext } from 'react'
-import type { StreamrClient } from 'streamr-client'
+import type { StreamrClient } from '@streamr/sdk'
 import { ClientContext } from 'streamr-client-react'
 
 function SqrtOfFoo() {
@@ -80,7 +80,7 @@ import { useSubscribe } from 'streamr-client-react'
 It allows you to conveniently subscribe to streams.
 
 ```typescript
-import type { ResendOptions, StreamMessage } from 'streamr-client'
+import type { ResendOptions, StreamMessage } from '@streamr/sdk'
 
 interface Options {
     // Changing `cacheKey` will drop the old subscription and start a new one.
@@ -124,7 +124,7 @@ import { useResend } from 'streamr-client-react'
 It allows you to resend historical messages without subscribing to the real-time messages.
 
 ```typescript
-import type { ResendOptions, Message } from 'streamr-client'
+import type { ResendOptions, Message } from '@streamr/sdk'
 
 interface Options {
     // Changing `cacheKey` will drop the old subscription and start a new one.

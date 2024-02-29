@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { ResendOptions, StreamDefinition } from 'streamr-client'
+import type { ResendOptions, StreamDefinition } from '@streamr/sdk'
 import type { StreamMessage } from 'streamr-client-protocol'
 import useClient from './useClient'
 import resend from './resend'
@@ -28,36 +28,36 @@ export default function useResend(
 
     const onMessageRef = useRef(onMessage)
 
-    useEffect(() => {
+    if (onMessageRef.current !== onMessage) {
         onMessageRef.current = onMessage
-    }, [onMessage])
+    }
 
     const onErrorRef = useRef(onError)
 
-    useEffect(() => {
+    if (onErrorRef.current !== onError) {
         onErrorRef.current = onError
-    }, [onError])
+    }
 
     const onMessageErrorRef = useRef(onMessageError)
 
-    useEffect(() => {
+    if (onMessageErrorRef.current !== onMessageError) {
         onMessageErrorRef.current = onMessageError
-    }, [onMessageError])
+    }
 
     const onBeforeStartRef = useRef(onBeforeStart)
 
-    useEffect(() => {
+    if (onBeforeStartRef.current !== onBeforeStart) {
         onBeforeStartRef.current = onBeforeStart
-    }, [onBeforeStart])
+    }
 
     const onAfterFinishRef = useRef(onAfterFinish)
 
-    useEffect(() => {
+    if (onAfterFinishRef.current !== onAfterFinish) {
         onAfterFinishRef.current = onAfterFinish
-    }, [onAfterFinish])
+    }
 
     useEffect(() => {
-        if (!client || disabled) {
+        if (disabled || !client) {
             return () => {}
         }
 
@@ -73,7 +73,7 @@ export default function useResend(
             ignoreUndecodedMessages,
         })
 
-        async function fn(q: ReturnType<typeof resend>) {
+        void (async (q: ReturnType<typeof resend>) => {
             while (true) {
                 const { value, done } = await q.next()
 
@@ -87,9 +87,7 @@ export default function useResend(
             }
 
             onAfterFinishRef.current?.()
-        }
-
-        fn(queue)
+        })(queue)
 
         return () => {
             queue?.abort()
