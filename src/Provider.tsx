@@ -1,6 +1,6 @@
 import React, { type ReactNode, type ReactElement } from 'react'
 import ClientContext from './ClientContext'
-import type { StreamrClientConfig } from 'streamr-client'
+import type { StreamrClientConfig } from '@streamr/sdk'
 import useClient from './useClient'
 
 export interface Props extends StreamrClientConfig {

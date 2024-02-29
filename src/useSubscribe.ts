@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { ResendOptions, StreamDefinition } from 'streamr-client'
+import type { ResendOptions, StreamDefinition } from '@streamr/sdk'
 import type { StreamMessage } from 'streamr-client-protocol'
 import subscribe from './subscribe'
 import useClient from './useClient'
