@@ -1,4 +1,4 @@
-import type { ResendOptions, StreamDefinition, StreamrClient, Subscription } from 'streamr-client'
+import type { ResendOptions, StreamDefinition, StreamrClient, Subscription } from '@streamr/sdk'
 import type { StreamMessage } from 'streamr-client-protocol'
 
 export interface FlowControls<T = unknown> {

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import type { StreamrClient, StreamrClientConfig } from 'streamr-client'
+import type { StreamrClient, StreamrClientConfig } from '@streamr/sdk'
 import ClientContext from './ClientContext'
 import useOpts from './useOpts'
 
@@ -12,7 +12,7 @@ async function getNewClient(config: StreamrClientConfig): Promise<StreamrClient 
         return undefined
     }
 
-    const StreamrClient = (await import('streamr-client')).default
+    const StreamrClient = (await import('@streamr/sdk')).default
 
     return new StreamrClient(config)
 }
