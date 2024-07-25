@@ -1,6 +1,6 @@
 # Streamr-client-react ✨
 
-React hooks and components for [`@streamr/sdk`](https://github.com/streamr-dev/network/tree/main/packages/client).
+React hooks and components for the streamr SDK. (no link)
 
 ## Installation
 
