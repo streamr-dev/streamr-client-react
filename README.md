@@ -16,7 +16,7 @@ The library relies on a collection of peer dependencies:
 process ^0.11.10
 react >=16.8.0
 react-fast-compare ^3.2.0
-@streamr/sdk >= 100.0.0
+@streamr/sdk >= 102.0.0
 ```
 
 Make sure you install them, too!

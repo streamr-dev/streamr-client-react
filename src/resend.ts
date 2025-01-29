@@ -1,5 +1,4 @@
-import type { ResendOptions, StreamDefinition, StreamrClient } from '@streamr/sdk'
-import type { StreamMessage } from 'streamr-client-protocol'
+import type { ResendOptions, StreamDefinition, StreamrClient, StreamMessage } from '@streamr/sdk'
 import { FlowControls, Options } from './subscribe'
 
 export default function resend(

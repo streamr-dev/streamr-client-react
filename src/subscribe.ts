@@ -1,5 +1,10 @@
-import type { ResendOptions, StreamDefinition, StreamrClient, Subscription } from '@streamr/sdk'
-import type { StreamMessage } from 'streamr-client-protocol'
+import type {
+    ResendOptions,
+    StreamDefinition,
+    StreamrClient,
+    Subscription,
+    StreamMessage,
+} from '@streamr/sdk'
 
 export interface FlowControls<T = unknown> {
     next: () => Promise<ReadableStreamReadResult<T>>
