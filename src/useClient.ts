@@ -12,7 +12,7 @@ async function getNewClient(config: StreamrClientConfig): Promise<StreamrClient 
         return undefined
     }
 
-    const StreamrClient = (await import('@streamr/sdk')).default
+    const { StreamrClient } = await import('@streamr/sdk')
 
     return new StreamrClient(config)
 }

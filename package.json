@@ -34,7 +34,7 @@
     "@babel/preset-react": "^7.18.6",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-url": "^8.0.1",
-    "@streamr/sdk": "^102.0.0",
+    "@streamr/sdk": "^103.3.0-experiment.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/deep-equal": "^1.0.1",
     "@types/jest": "^29.4.0",
@@ -61,7 +61,7 @@
     "typescript": "^4.9.5"
   },
   "peerDependencies": {
-    "@streamr/sdk": "^102.0.0",
+    "@streamr/sdk": "^103.3.0-experiment.0",
     "process": "^0.11.10",
     "react": ">=16.8.0",
     "react-fast-compare": "^3.2.0"
