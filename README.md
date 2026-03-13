@@ -162,7 +162,7 @@ See
 import { subscribe } from 'streamr-client-react'
 ```
 
-Subscribes to a stream and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
+Subscribes to a stream and returns an object with 2 asynchronous methods: `next` and `abort`. Example:
 
 ```typescript
 async function foo(streamId: string, client: StreamrClient) {
@@ -207,7 +207,7 @@ interface Options {
 import { resend } from 'streamr-client-react'
 ```
 
-Subscribes to a stream of historical messages (only) and returns an object with 2 asynchrounous methods: `next` and `abort`. Example:
+Subscribes to a stream of historical messages (only) and returns an object with 2 asynchronous methods: `next` and `abort`. Example:
 
 ```typescript
 async function foo(streamId: string, client: StreamrClient) {
